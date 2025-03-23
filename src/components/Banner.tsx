@@ -27,7 +27,9 @@ export default function Banner() {
         objectFit="cover"
         style={{ filter: "brightness(50%)" }}
       />
-      <div className="relative top-[25%] z-20 text-center">
+      <div className="relative top-[25%] z-20 text-center" onClick={(e) => {
+          e.stopPropagation();
+        }}>
         <h1 className="text-4xl font-serif text-white">CozyHotel</h1>
         <h3 className="text-xl font-serif text-white">At CozyHotel, you always feel at home</h3>
       </div>
