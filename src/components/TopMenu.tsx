@@ -25,19 +25,27 @@ export default async function TopMenu() {
       <TopMenuItem title="About" pageRef="/about" />
       <TopMenuItem title="My Bookings" pageRef="/cart" />
       <div className="flex flex-row absolute right-0 h-full">
-        {session ? (
+      {session && session.user ? (
           <Link href="/api/auth/signout">
             <div className="flex items-center h-full px-2 text-cyan-600 text-sm">
-              Sign-Out of {session.user?.name}
+              Sign-Out
             </div>
           </Link>
         ) : (
           <Link href="/api/auth/signin">
             <div className="flex items-center h-full px-2 text-cyan-600 text-sm">
-              Sign-In
+              Sign-In 
             </div>
           </Link>
         )}
+
+        {session ? "" : (
+          <Link href="/register">
+            <div className="flex items-center h-full px-2 text-cyan-600 text-sm">
+              Register
+            </div>
+          </Link>
+        )}  
       </div>
     </div>
   );
