@@ -5,17 +5,13 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 export default function Banner() {
-  const covers = [
-    "/img/cover.jpg",
-    "/img/cover2.jpg",
-    "/img/cover3.jpg",
-    "/img/cover4.jpg",
-  ];
+  const covers = ["/img/cover.jpg", "/img/cover2.jpg", "/img/cover3.jpg"];
   const [index, setIndex] = useState(0);
   const router = useRouter();
+
   const { data: session } = useSession();
   console.log(session?.user.token);
-
+  
   return (
     <div
       className="block w-screen h-[80vh] relative p-1 m-0"
@@ -24,28 +20,33 @@ export default function Banner() {
       }}
     >
       <Image
-        src={covers[index % 4]}
+        src={covers[index % 3]}
         alt="cover"
         fill={true}
         priority
         objectFit="cover"
         style={{ filter: "brightness(50%)" }}
       />
-      <div className="relative top-[35%] z-20 text-center">
-        <h1 className="text-4xl font-serif">
-          where every event finds its venue
-        </h1>
-        <h3 className="text-xl font-serif">
-          Finding the perfect venue has never been easier. Whether it's a
-          wedding, corporate event, or private party, we connecting people to
-          the perfect place.
-        </h3>
+      <div className="relative top-[25%] z-20 text-center">
+        <h1 className="text-4xl font-serif">Your Travel Partner</h1>
+        <h3 className="text-xl font-serif">Explore Your World with Us</h3>
       </div>
       {session ? (
         <div className="z-30 absolute top-5 right-10 font-semibold text-white text-xl">
           Hello {session.user?.name}
         </div>
       ) : null}
+      <button
+        className="bg-[#181A1B] text-[#52D7F7] border border-[#52D7F7] 
+        font-semibold py-2 px-4 m-2 rounded z-30 absolute bottom-0 right-0 hover:bg-[#52D7F7]
+        hover:text-[#181A1B] hover:boarder-transparent"
+        onClick={(e) => {
+          e.stopPropagation();
+          router.push("/car");
+        }}
+      >
+        Select Your Travel Partner NOW
+      </button>
     </div>
   );
 }

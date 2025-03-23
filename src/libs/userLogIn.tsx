@@ -1,10 +1,12 @@
+import Email from "next-auth/providers/email";
+
 export default async function userLogIn(
   userEmail: string,
   userPassword: string
 ) {
   await new Promise((resolve) => setTimeout(resolve, 300));
 
-  const response = await fetch("https://a08-venue-explorer-backend-2.vercel.app/api/v1/auth/login", {
+  const response = await fetch("http://localhost:5000/api/v1/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

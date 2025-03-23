@@ -1,5 +1,5 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
-import bookSlice from "./features/bookSlice";
+import cartSlice from "./features/cartSlice";
 import { UseSelector, TypedUseSelectorHook, useSelector } from "react-redux";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 import { WebStorage } from "redux-persist/lib/types";
@@ -38,7 +38,7 @@ const persistConfig = {
   storage,
 };
 
-const rootReducer = combineReducers({ bookSlice });
+const rootReducer = combineReducers({ cartSlice });
 const reduxPersistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
@@ -50,7 +50,6 @@ export const store = configureStore({
       },
     }),
 });
-
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
