@@ -28,8 +28,8 @@ export default function Banner() {
         style={{ filter: "brightness(50%)" }}
       />
       <div className="relative top-[25%] z-20 text-center">
-        <h1 className="text-4xl font-serif">CozyHotel</h1>
-        <h3 className="text-xl font-serif">At CozyHotel, you always feel at home</h3>
+        <h1 className="text-4xl font-serif text-white">CozyHotel</h1>
+        <h3 className="text-xl font-serif text-white">At CozyHotel, you always feel at home</h3>
       </div>
       {session ? (
         <div className="z-30 absolute top-5 right-10 font-semibold text-white text-xl">
