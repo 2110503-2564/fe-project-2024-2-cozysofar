@@ -7,9 +7,9 @@ import { TravelCard } from "@/components/TravelCard";
 
 export default function Home() {
   return (
-    <main>
+    <main className={styles.main}>
       <Banner />
-      <TravelCard></TravelCard>
+      
     </main>
   );
 }

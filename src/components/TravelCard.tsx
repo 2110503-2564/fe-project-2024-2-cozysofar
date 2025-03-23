@@ -4,7 +4,15 @@ import { useState } from "react";
 import { Rating } from "@mui/material";
 import { useWindowListener } from "@/hooks/useWindowListener";
 
-export function TravelCard() {
+export function TravelCard({
+  title,
+  description,
+  imageUrl
+}: {
+  title: string;
+  description: string;
+  imageUrl: string;
+}) {
   const [playing, setPlaying] = useState(true);
   const [rating, setRating] = useState(0);
   const [pointerPosition, setPointerPosition] = useState({ x: 0, y: 0 });
@@ -20,10 +28,11 @@ export function TravelCard() {
     <div className="w-[80%] bg-[#25282A] shadow-lg mx-[10%] my-10 p-2 rounded-lg flex flex-row">
       <VlogPlayer
         isPlaying={playing}
-        vdoSrc="/video/EdgeRunner.mp4"
+        vdoSrc={imageUrl}
       ></VlogPlayer>
       <div>
-        <div className="text-lg font-bold text-[#52D7F7] m-2">Night City</div>
+        <div className="text-lg font-bold text-[#52D7F7] m-2">{title}</div>
+        <div className="text-sm text-white m-2">{description}</div>
         <button
           className="block bg-[#181A1B] text-[#52D7F7] border border-[#52D7F7] 
           font-semibold py-2 px-4 m-2 rounded z-30 bottom-0 right-0 hover:bg-[#52D7F7]
