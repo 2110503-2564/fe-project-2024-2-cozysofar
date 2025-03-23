@@ -10,7 +10,7 @@ export default async function createReservation(
   }
 ) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session?.user?.token) {
     throw new Error("Authentication required");
   }
@@ -32,4 +32,4 @@ export default async function createReservation(
   }
 
   return await response.json();
-} 
+}

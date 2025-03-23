@@ -1,5 +1,5 @@
 import Image from "next/image";
-import getCar from "@/libs/getHotel";
+import getHotel from "@/libs/getHotel";
 import Link from "next/link";
 
 export default async function HotelDetailPage({
@@ -7,7 +7,7 @@ export default async function HotelDetailPage({
 }: {
   params: { hid: string };
 }) {
-  const hotelDetail = await getCar(params.hid);
+  const hotelDetail = await getHotel(params.hid);
 
   if (!hotelDetail || !hotelDetail.data) {
     return (
