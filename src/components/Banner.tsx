@@ -44,7 +44,7 @@ export default function Banner() {
         hover:text-[#181A1B] hover:boarder-transparent"
         onClick={(e) => {
           e.stopPropagation();
-          router.push("/car");
+          router.push("/hotel");
         }}
       >
         Select Your Hotel
