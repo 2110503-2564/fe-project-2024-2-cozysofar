@@ -6,7 +6,7 @@ export default async function userLogIn(
 ) {
   await new Promise((resolve) => setTimeout(resolve, 300));
 
-  const response = await fetch("http://localhost:5000/api/v1/auth/login", {
+  const response = await fetch("https://cozyhotel-be.vercel.app/api/v1/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

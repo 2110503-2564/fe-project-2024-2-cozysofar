@@ -21,7 +21,7 @@ export default async function TopMenu() {
         />
       </Link>
       {/*<TopMenuItem title="Reservation" pageRef="/reservations" />*/}
-      <TopMenuItem title="Select Hotel" pageRef="/car" />
+      <TopMenuItem title="Select Hotel" pageRef="/hotel" />
       <TopMenuItem title="About" pageRef="/about" />
       <TopMenuItem title="My Bookings" pageRef="/cart" />
       <div className="flex flex-row absolute right-0 h-full">

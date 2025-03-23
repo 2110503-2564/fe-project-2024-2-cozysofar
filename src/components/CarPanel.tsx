@@ -2,7 +2,7 @@
 import { useReducer, useState, useRef, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import Link from "next/link";
-import getCars from "@/libs/getCars";
+import getCars from "@/libs/getHotels";
 
 type Car = {
   _id: string;

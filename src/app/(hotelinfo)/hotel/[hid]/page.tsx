@@ -1,5 +1,5 @@
 import Image from "next/image";
-import getCar from "@/libs/getCar";
+import getCar from "@/libs/getHotel";
 import Link from "next/link";
 
 export default async function CarDetailPage({

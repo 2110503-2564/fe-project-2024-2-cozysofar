@@ -45,7 +45,7 @@ export default function Banner() {
           router.push("/car");
         }}
       >
-        Select Your Room
+        Select Your Hotel
       </button>
     </div>
   );
