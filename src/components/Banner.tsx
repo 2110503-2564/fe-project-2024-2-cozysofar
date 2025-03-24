@@ -16,7 +16,7 @@ export default function Banner() {
         muted
         playsInline
         disablePictureInPicture
-        className="absolute top-0 left-0 w-full h-full object-cover brightness-50"
+        className="absolute top-0 left-0 w-full h-full object-cover brightness-75"
       >
         <source src="https://media.iceportal.com/138346/Videos/video040524214954517_1080p.mp4" type="video/mp4" />
       </video>
