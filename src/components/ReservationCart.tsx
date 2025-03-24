@@ -14,10 +14,14 @@ interface Booking {
   };
   checkinDate: string;
   checkoutDate: string;
-  user: string;
+  user: {
+    name: string;
+    email: string;
+  };
 }
 
 export default function ReservationCart() {
+
   const { data: session } = useSession();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +35,15 @@ export default function ReservationCart() {
   const [successMessage, setSuccessMessage] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
+
+  // Calculate duration of stay in days
+  const calculateDuration = (checkinDate: string, checkoutDate: string) => {
+    const checkin = new Date(checkinDate);
+    const checkout = new Date(checkoutDate);
+    const diffTime = Math.abs(checkout.getTime() - checkin.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -57,7 +70,13 @@ export default function ReservationCart() {
   };
 
   const handleSave = async () => {
-    if (!editingBooking || !newCheckinDate || !newCheckoutDate || !session?.user?.token) return;
+    if (
+      !editingBooking ||
+      !newCheckinDate ||
+      !newCheckoutDate ||
+      !session?.user?.token
+    )
+      return;
 
     setEditLoading(true);
     try {
@@ -93,7 +112,7 @@ export default function ReservationCart() {
     setDeleteLoading(bookingToDelete._id);
     try {
       await deleteBooking(bookingToDelete._id, session.user.token);
-      
+
       // Refresh bookings after deletion
       const response = await getBookings(session.user.token);
       setBookings(response.data);
@@ -187,15 +206,22 @@ export default function ReservationCart() {
                   />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-[#52D7F7] mb-2">Delete Booking</h2>
+              <h2 className="text-xl font-semibold text-[#52D7F7] mb-2">
+                Delete Booking
+              </h2>
               <p className="text-gray-400">
                 Are you sure you want to delete your booking at{" "}
-                <span className="text-[#52D7F7]">{bookingToDelete.hotel.name}</span>?
+                <span className="text-[#52D7F7]">
+                  {bookingToDelete.hotel.name}
+                </span>
+                ?
               </p>
               <p className="text-gray-400 mt-2 text-sm">
-                Check-in: {new Date(bookingToDelete.checkinDate).toLocaleDateString()}
+                Check-in:{" "}
+                {new Date(bookingToDelete.checkinDate).toLocaleDateString()}
                 <br />
-                Check-out: {new Date(bookingToDelete.checkoutDate).toLocaleDateString()}
+                Check-out:{" "}
+                {new Date(bookingToDelete.checkoutDate).toLocaleDateString()}
               </p>
             </div>
             <div className="flex space-x-3 justify-center">
@@ -210,7 +236,7 @@ export default function ReservationCart() {
                     Deleting...
                   </>
                 ) : (
-                  'Delete'
+                  "Delete"
                 )}
               </button>
               <button
@@ -234,8 +260,20 @@ export default function ReservationCart() {
           rounded px-5 mx-5 py-4 my-3"
           key={booking._id}
         >
-          <div className="text-xl font-semibold">{booking.hotel.name}</div>
-          <div className="text-md mt-2">
+          {booking.hotel ? (
+            <div className="text-xl font-semibold">{booking.hotel.name}</div>
+          ) : (
+            <div className="text-xl font-semibold">Unknown Hotel</div>
+          )}
+          {session.user.role === "admin" ? (
+            <div className="text-md">
+              Reservation Owner: {booking.user.name}
+            </div>
+          ) : null}
+          <div className="text-md">
+            Duration:{calculateDuration(booking.checkinDate, booking.checkoutDate)} days
+          </div>
+          <div className="text-md">
             Check-in: {new Date(booking.checkinDate).toLocaleDateString()}
           </div>
           <div className="text-md">
@@ -265,7 +303,9 @@ export default function ReservationCart() {
             <h2 className="text-[#52D7F7] text-xl mb-4">Edit Booking Dates</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-[#52D7F7] mb-2">Check-in Date</label>
+                <label className="block text-[#52D7F7] mb-2">
+                  Check-in Date
+                </label>
                 <DatePicker
                   selected={newCheckinDate}
                   onChange={(date: Date | null) => setNewCheckinDate(date)}
@@ -275,7 +315,9 @@ export default function ReservationCart() {
                 />
               </div>
               <div>
-                <label className="block text-[#52D7F7] mb-2">Check-out Date</label>
+                <label className="block text-[#52D7F7] mb-2">
+                  Check-out Date
+                </label>
                 <DatePicker
                   selected={newCheckoutDate}
                   onChange={(date: Date | null) => setNewCheckoutDate(date)}
@@ -297,7 +339,7 @@ export default function ReservationCart() {
                       Saving...
                     </>
                   ) : (
-                    'Save Changes'
+                    "Save Changes"
                   )}
                 </button>
                 <button
@@ -318,4 +360,3 @@ export default function ReservationCart() {
     </div>
   );
 }
-    
