@@ -14,12 +14,12 @@ export default function Banner() {
         loop
         muted
         playsInline
-        className="absolute top-0 left-0 w-full h-full object-cover brightness-50"
+        className="absolute top-0 left-0 w-full h-full object-cover brightness-75"
       >
         <source src="https://media.iceportal.com/138346/Videos/video040524214954517_1080p.mp4" type="video/mp4" />
       </video>
       <div
-        className="relative top-[35%] z-20 text-center"
+        className="relative top-[45%] z-20 text-center"
       >
         <h1 className="text-4xl font-serif text-white">CozyHotel</h1>
         <h3 className="text-xl font-serif text-white">
@@ -34,12 +34,12 @@ export default function Banner() {
         </div>
       ) : null}
       <button
-        className="bg-black text-white font-serif 
+        className="bg-[#1A1A1A] text-white font-serif 
              py-3 px-6 rounded-full z-30 absolute bottom-5 right-5 
              transition-all duration-300 ease-in-out
-             border border-[#60788B] shadow-lg
-             hover:bg-gray-400 hover:border-[#8FA7BE] 
-             hover:text-white transform hover:scale-105"
+             border border-[#333333] shadow-lg
+             hover:bg-[#2A2A2A] hover:border-[#404040] 
+             hover:text-white transform hover:scale-105 hover:shadow-xl"
         onClick={() => {
           router.push("/hotel");
         }}
