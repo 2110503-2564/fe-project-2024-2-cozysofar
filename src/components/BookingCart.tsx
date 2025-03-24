@@ -132,8 +132,12 @@ export default function ReservationCart() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-serif text-[#C9A55C] mb-4">Please Sign In</h2>
-          <p className="text-gray-300">Sign in to view and manage your bookings</p>
+          <h2 className="text-2xl font-serif text-[#C9A55C] mb-4">
+            Please Sign In
+          </h2>
+          <p className="text-gray-300">
+            Sign in to view and manage your bookings
+          </p>
         </div>
       </div>
     );
@@ -144,7 +148,9 @@ export default function ReservationCart() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C9A55C] mb-4 mx-auto"></div>
-          <div className="text-[#C9A55C] text-lg font-serif">Loading your bookings...</div>
+          <div className="text-[#C9A55C] text-lg font-serif">
+            Loading your bookings...
+          </div>
         </div>
       </div>
     );
@@ -154,8 +160,12 @@ export default function ReservationCart() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
         <div className="text-center">
-          <h2 className="text-2xl font-serif text-[#C9A55C] mb-4">No Bookings Yet</h2>
-          <p className="text-gray-300">Start exploring our luxury hotels to make your first booking</p>
+          <h2 className="text-2xl font-serif text-[#C9A55C] mb-4">
+            No Bookings Yet
+          </h2>
+          <p className="text-gray-300">
+            Start exploring our luxury hotels to make your first booking
+          </p>
         </div>
       </div>
     );
@@ -164,21 +174,44 @@ export default function ReservationCart() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-serif text-[#C9A55C] text-center mb-12">Your Bookings</h1>
-        
+        <h1 className="text-4xl font-serif text-[#C9A55C] text-center mb-12">
+          Your Bookings
+        </h1>
+
         <div className="space-y-6">
           {bookings.map((booking) => (
             <div key={booking._id} className="luxury-card p-6">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
                 <div>
-                  <h2 className="text-2xl font-serif text-[#C9A55C] mb-2">{booking.hotel.name}</h2>
+                  <h2 className="text-2xl font-serif text-[#C9A55C] mb-2">
+                    {booking.hotel.name}
+                  </h2>
                   <div className="text-gray-300 space-y-1">
-                    <p>Check-in: {new Date(booking.checkinDate).toLocaleDateString()}</p>
-                    <p>Check-out: {new Date(booking.checkoutDate).toLocaleDateString()}</p>
-                    <p>Duration: {calculateDuration(booking.checkinDate, booking.checkoutDate)} days</p>
+                    { session.user.role === "admin"?
+                    <p>
+                      Booking owner:{" "}
+                      {booking.user.name || booking.user.email}
+                    </p>: null
+                    }
+                    <p>
+                      Check-in:{" "}
+                      {new Date(booking.checkinDate).toLocaleDateString()}
+                    </p>
+                    <p>
+                      Check-out:{" "}
+                      {new Date(booking.checkoutDate).toLocaleDateString()}
+                    </p>
+                    <p>
+                      Duration:{" "}
+                      {calculateDuration(
+                        booking.checkinDate,
+                        booking.checkoutDate
+                      )}{" "}
+                      days
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex space-x-4">
                   <button
                     onClick={() => handleEdit(booking)}
@@ -200,7 +233,9 @@ export default function ReservationCart() {
                 <div className="mt-6 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-gray-300 mb-2">Check-in Date</label>
+                      <label className="block text-gray-300 mb-2">
+                        Check-in Date
+                      </label>
                       <DatePicker
                         selected={newCheckinDate}
                         onChange={(date) => setNewCheckinDate(date)}
@@ -210,7 +245,9 @@ export default function ReservationCart() {
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-300 mb-2">Check-out Date</label>
+                      <label className="block text-gray-300 mb-2">
+                        Check-out Date
+                      </label>
                       <DatePicker
                         selected={newCheckoutDate}
                         onChange={(date) => setNewCheckoutDate(date)}
@@ -305,9 +342,11 @@ export default function ReservationCart() {
                 ?
               </p>
               <p className="text-gray-400 mt-4 text-sm">
-                Check-in: {new Date(bookingToDelete.checkinDate).toLocaleDateString()}
+                Check-in:{" "}
+                {new Date(bookingToDelete.checkinDate).toLocaleDateString()}
                 <br />
-                Check-out: {new Date(bookingToDelete.checkoutDate).toLocaleDateString()}
+                Check-out:{" "}
+                {new Date(bookingToDelete.checkoutDate).toLocaleDateString()}
               </p>
             </div>
             <div className="flex space-x-4 justify-center">
