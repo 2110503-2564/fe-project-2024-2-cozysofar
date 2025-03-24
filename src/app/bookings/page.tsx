@@ -30,7 +30,7 @@ export default function Reservations() {
             `https://cozyhotel-be.vercel.app/api/v1/hotels/${cid}`
           );
           console.log("Response status:", response.status);
-          
+
           if (response.ok) {
             const data = await response.json();
             console.log("Received data:", data);
@@ -74,20 +74,24 @@ export default function Reservations() {
 
       setIsLoading(true);
       try {
-        console.log('Making reservation with data:', {
+        console.log("Making reservation with data:", {
           cid,
           dates: {
             checkinDate: dayjs(pickupDate).format("YYYY/MM/DD"),
-            checkoutDate: dayjs(returnDate).format("YYYY/MM/DD")
+            checkoutDate: dayjs(returnDate).format("YYYY/MM/DD"),
           },
-          userId: session.user._id
+          userId: session.user._id,
         });
 
-        await createBooking(cid, {
-          startDate: dayjs(pickupDate).format("YYYY-MM-DD"),
-          endDate: dayjs(returnDate).format("YYYY-MM-DD"),
-          user: session.user._id
-        }, session.user.token);
+        await createBooking(
+          cid,
+          {
+            startDate: dayjs(pickupDate).format("YYYY-MM-DD"),
+            endDate: dayjs(returnDate).format("YYYY-MM-DD"),
+            user: session.user._id,
+          },
+          session.user.token
+        );
 
         const item: ReservationItem = {
           carId: cid,
@@ -102,7 +106,10 @@ export default function Reservations() {
           router.push("/cart");
         }, 2000);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to create reservation. Please try again.";
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to create reservation. Please try again.";
         alert(errorMessage);
         console.error("Reservation error:", error);
       } finally {
@@ -119,11 +126,13 @@ export default function Reservations() {
           <div className="bg-white p-6 rounded-lg shadow-xl text-center">
             <div className="text-green-600 text-2xl mb-4">✓</div>
             <p className="text-gray-800 font-medium">Reservation successful!</p>
-            <p className="text-gray-600 text-sm mt-2">Redirecting to your reservations...</p>
+            <p className="text-gray-600 text-sm mt-2">
+              Redirecting to your reservations...
+            </p>
           </div>
         </div>
       )}
-      
+
       <div className="max-w-4xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-light text-white mb-4 tracking-[0.2em] uppercase">
@@ -143,8 +152,10 @@ export default function Reservations() {
             <LocationDateReserve
               onDateChange={(value: Dayjs) => {
                 setPickupDate(value);
+                setReturnDate(null); // Reset return date if pickup date changes
               }}
               onLocationChange={() => {}}
+              minDate={dayjs()} // Check-in date can't be in the past
             />
           </div>
 
@@ -157,6 +168,10 @@ export default function Reservations() {
                 setReturnDate(value);
               }}
               onLocationChange={() => {}}
+              minDate={
+                pickupDate ? pickupDate.add(1, "day") : dayjs().add(1, "day")
+              }
+              // Check-out date must be at least 1 day after Check-in
             />
           </div>
 
@@ -168,7 +183,9 @@ export default function Reservations() {
               disabled:opacity-50 disabled:cursor-not-allowed
               relative"
               onClick={makeReservation}
-              disabled={!cid || !model || !pickupDate || !returnDate || isLoading}
+              disabled={
+                !cid || !model || !pickupDate || !returnDate || isLoading
+              }
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">

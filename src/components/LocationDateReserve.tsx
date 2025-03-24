@@ -3,14 +3,16 @@ import { useState } from "react";
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 export default function LocationDateReserve({
   onDateChange,
   onLocationChange,
+  minDate,
 }: {
   onDateChange: Function;
   onLocationChange: Function;
+  minDate?: Dayjs;
 }) {
   const [reserveDate, setReserveDate] = useState<Dayjs | null>(null);
   return (
@@ -25,6 +27,8 @@ export default function LocationDateReserve({
             setReserveDate(value);
             onDateChange(value);
           }}
+          disablePast
+          minDate={minDate || dayjs()}
           sx={{
             '& .MuiInputBase-root': {
               color: 'white',
