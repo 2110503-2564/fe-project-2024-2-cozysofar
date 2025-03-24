@@ -77,6 +77,12 @@ export default function ReservationCart() {
     )
       return;
 
+    // Add validation to prevent check-in date being after check-out date
+    if (newCheckinDate > newCheckoutDate) {
+      alert("Check-in date cannot be after check-out date");
+      return;
+    }
+
     setEditLoading(true);
     try {
       await editBooking(editingBooking, session.user.token, {
