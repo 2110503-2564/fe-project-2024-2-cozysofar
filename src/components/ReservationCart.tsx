@@ -35,18 +35,18 @@ export default function ReservationCart() {
     fetchBookings();
   }, [session]);
 
-  if (loading) {
-    return (
-      <div className="text-center text-[#52D7F7] py-8">
-        Loading your bookings...
-      </div>
-    );
-  }
-
   if (!session) {
     return (
       <div className="text-center text-[#52D7F7] py-8">
         Please sign in to view your bookings
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center text-[#52D7F7] py-8">
+        Loading your bookings...
       </div>
     );
   }
