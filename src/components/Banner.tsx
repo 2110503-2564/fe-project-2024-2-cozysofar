@@ -11,7 +11,7 @@ export default function Banner() {
 
   const { data: session } = useSession();
   console.log(session?.user.token);
-  
+
   return (
     <div
       className="block w-screen h-[80vh] relative p-1 m-0"
@@ -27,14 +27,24 @@ export default function Banner() {
         objectFit="cover"
         style={{ filter: "brightness(50%)" }}
       />
-      <div className="relative top-[25%] z-20 text-center" onClick={(e) => {
+      <div
+        className="relative top-[25%] z-20 text-center"
+        onClick={(e) => {
           e.stopPropagation();
-        }}>
+        }}
+      >
         <h1 className="text-4xl font-serif text-white">CozyHotel</h1>
-        <h3 className="text-xl font-serif text-white">At CozyHotel, you always feel at home</h3>
+        <h3 className="text-xl font-serif text-white">
+          At CozyHotel, you always feel at home
+        </h3>
       </div>
       {session ? (
-        <div className="z-30 absolute top-5 right-10 font-semibold text-white text-xl">
+        <div
+          className="z-30 absolute top-5 right-10 font-serif text-white text-xl"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
           Hello {session.user?.name}
         </div>
       ) : null}
