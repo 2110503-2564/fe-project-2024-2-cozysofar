@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import getBookings from "@/libs/getBookings";
 import editBooking from "@/libs/editBooking";
+import deleteBooking from "@/libs/deleteBooking";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -25,8 +26,11 @@ export default function ReservationCart() {
   const [newCheckoutDate, setNewCheckoutDate] = useState<Date | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -75,6 +79,34 @@ export default function ReservationCart() {
       alert("Failed to update booking. Please try again.");
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (booking: Booking) => {
+    setBookingToDelete(booking);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDelete = async () => {
+    if (!session?.user?.token || !bookingToDelete) return;
+
+    setDeleteLoading(bookingToDelete._id);
+    try {
+      await deleteBooking(bookingToDelete._id, session.user.token);
+      
+      // Refresh bookings after deletion
+      const response = await getBookings(session.user.token);
+      setBookings(response.data);
+      setSuccessMessage("Booking deleted successfully!");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error) {
+      console.error("Failed to delete booking:", error);
+      alert("Failed to delete booking. Please try again.");
+    } finally {
+      setDeleteLoading(null);
+      setShowDeleteConfirm(false);
+      setBookingToDelete(null);
     }
   };
 
@@ -135,6 +167,67 @@ export default function ReservationCart() {
         </div>
       )}
 
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && bookingToDelete && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-[#181A1B] p-6 rounded-lg w-96 border border-[#52D7F7] shadow-lg">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-red-100">
+                <svg
+                  className="w-8 h-8 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-[#52D7F7] mb-2">Delete Booking</h2>
+              <p className="text-gray-400">
+                Are you sure you want to delete your booking at{" "}
+                <span className="text-[#52D7F7]">{bookingToDelete.hotel.name}</span>?
+              </p>
+              <p className="text-gray-400 mt-2 text-sm">
+                Check-in: {new Date(bookingToDelete.checkinDate).toLocaleDateString()}
+                <br />
+                Check-out: {new Date(bookingToDelete.checkoutDate).toLocaleDateString()}
+              </p>
+            </div>
+            <div className="flex space-x-3 justify-center">
+              <button
+                onClick={handleDelete}
+                className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 transition-colors flex items-center justify-center min-w-[100px]"
+                disabled={deleteLoading === bookingToDelete._id}
+              >
+                {deleteLoading === bookingToDelete._id ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setBookingToDelete(null);
+                }}
+                className="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700 transition-colors"
+                disabled={deleteLoading === bookingToDelete._id}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {bookings.map((booking) => (
         <div
           className="bg-[#181A1B] text-[#52D7F7] border border-[#52D7F7] 
@@ -148,12 +241,20 @@ export default function ReservationCart() {
           <div className="text-md">
             Check-out: {new Date(booking.checkoutDate).toLocaleDateString()}
           </div>
-          <button
-            onClick={() => handleEdit(booking)}
-            className="mt-3 bg-[#52D7F7] text-[#181A1B] px-4 py-2 rounded hover:bg-[#3BC1E5] transition-colors"
-          >
-            Edit Dates
-          </button>
+          <div className="flex space-x-3 mt-3">
+            <button
+              onClick={() => handleEdit(booking)}
+              className="bg-[#52D7F7] text-[#181A1B] px-4 py-2 rounded hover:bg-[#3BC1E5] transition-colors"
+            >
+              Edit Dates
+            </button>
+            <button
+              onClick={() => handleDeleteClick(booking)}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+            >
+              Delete Booking
+            </button>
+          </div>
         </div>
       ))}
 
