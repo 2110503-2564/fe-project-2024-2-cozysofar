@@ -62,7 +62,7 @@ export default async function HotelDetailPage({
 
               <div className="mt-8">
                 <Link
-                  href={`/reservations?id=${params.hid}&model=${hotelDetail.data.model}`}
+                  href={`/bookings?id=${params.hid}&model=${hotelDetail.data.model}`}
                   className="block w-full"
                 >
                   <button

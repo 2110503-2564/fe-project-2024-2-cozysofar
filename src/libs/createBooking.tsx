@@ -1,4 +1,4 @@
-export default async function createReservation(
+export default async function createBooking(
   hotelId: string,
   bookingData: {
     startDate: string;

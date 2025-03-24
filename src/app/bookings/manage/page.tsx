@@ -1,8 +1,8 @@
-export default function ManageReservations() {
+export default function ManageBooking() {
     return (
         <main>
             <div className="text-center text-lg">
-                Manage Your Reservation
+                Manage Your Booking
             </div>
         </main>
     );

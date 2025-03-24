@@ -1,10 +1,10 @@
 "use client";
-import ReservationCart from "@/components/ReservationCart";
+import BookingCart from "@/components/ReservationCart";
 
 export default function CartPage() {
   return (
     <main>
-      <ReservationCart></ReservationCart>
+      <BookingCart></BookingCart>
     </main>
   );
 }

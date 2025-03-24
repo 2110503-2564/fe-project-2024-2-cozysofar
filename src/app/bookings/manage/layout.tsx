@@ -1,4 +1,4 @@
-export default function ManagerReservationLayout({
+export default function ManagerBookingLayout({
   children,
   dashboard,
   manage,

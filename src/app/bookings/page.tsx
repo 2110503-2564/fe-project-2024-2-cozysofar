@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux";
 import { ReservationItem } from "../../../interface";
 import { addReservation } from "@/redux/features/cartSlice";
 import { useSession } from "next-auth/react";
-import createReservation from "@/libs/createReservation";
+import createBooking from "@/libs/createBooking";
 
 export default function Reservations() {
   const urlParams = useSearchParams();
@@ -83,7 +83,7 @@ export default function Reservations() {
           userId: session.user._id
         });
 
-        await createReservation(cid, {
+        await createBooking(cid, {
           startDate: dayjs(pickupDate).format("YYYY-MM-DD"),
           endDate: dayjs(returnDate).format("YYYY-MM-DD"),
           user: session.user._id
