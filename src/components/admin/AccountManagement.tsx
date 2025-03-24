@@ -60,42 +60,42 @@ export default function AccountManagement() {
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-6">User Accounts</h2>
+      <h2 className="text-2xl font-serif text-[#C9A55C] mb-6">User Accounts</h2>
 
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-gray-400">Loading...</p>
       ) : (
         <div className="grid gap-4">
           {users.map((user: any) => (
             <div
               key={user._id}
-              className="border rounded-lg p-4 flex justify-between items-center"
+              className="border border-[#333333] rounded-lg p-4 flex justify-between items-center bg-[#1A1A1A] hover:bg-[#2A2A2A] transition-colors"
             >
               <div>
-                <h3 className="font-semibold">{user.name}</h3>
-                <p className="text-sm text-gray-600">{user.email}</p>
-                <p className="text-sm text-gray-600">Tel: {user.tel}</p>
-                <p className="text-xs text-gray-500">Role: {user.role}</p>
-                <p className="text-xs text-gray-400">
+                <h3 className="font-semibold text-white">{user.name}</h3>
+                <p className="text-sm text-gray-400">{user.email}</p>
+                <p className="text-sm text-gray-400">Tel: {user.tel}</p>
+                <p className="text-xs text-[#C9A55C]">Role: {user.role}</p>
+                <p className="text-xs text-gray-500">
                   Created: {new Date(user.createAt).toLocaleDateString()}
                 </p>
               </div>
               <div className="flex space-x-2">
                 <button
                   onClick={() => handleUpdateRole(user._id, "admin")}
-                  className="bg-blue-500 text-white px-3 py-1 rounded"
+                  className="px-3 py-1 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded hover:bg-[#C9A55C] hover:text-white transition-colors"
                 >
                   Make Admin
                 </button>
                 <button
                   onClick={() => handleUpdateRole(user._id, "user")}
-                  className="bg-green-500 text-white px-3 py-1 rounded"
+                  className="px-3 py-1 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded hover:bg-[#C9A55C] hover:text-white transition-colors"
                 >
                   Make User
                 </button>
                 <button
                   onClick={() => handleDeleteUser(user._id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded"
+                  className="px-3 py-1 bg-red-900/20 text-red-500 border border-red-500 rounded hover:bg-red-500 hover:text-white transition-colors"
                 >
                   Delete
                 </button>
