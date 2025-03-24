@@ -8,41 +8,59 @@ export default function Banner() {
   const { data: session } = useSession();
 
   return (
-    <div className="relative w-full h-[calc(100vh-64px)]">
+    <div className="relative w-full h-[calc(100vh-64px)] overflow-hidden">
+      {/* Video Background */}
       <video
         autoPlay
         loop
         muted
         playsInline
         disablePictureInPicture
-        className="absolute top-0 left-0 w-full h-full object-cover brightness-75"
+        className="absolute top-0 left-0 w-full h-full object-cover brightness-50"
       >
         <source src="https://media.iceportal.com/138346/Videos/video040524214954517_1080p.mp4" type="video/mp4" />
       </video>
-      <div className="relative top-[40%] z-20 text-center">
-        <h1 className="text-4xl font-serif text-white">CozyHotel</h1>
-        <h3 className="text-xl font-serif text-white">
-          At CozyHotel, you always feel at home
-        </h3>
-      </div>
-      {session ? (
-        <div className="z-30 absolute top-5 right-10 font-serif text-white text-xl">
-          Hello {session.user?.name}
+
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
+
+      {/* Content */}
+      <div className="relative z-20 h-full flex flex-col justify-center items-center text-center px-4">
+        {/* Welcome Message */}
+        {session && (
+          <div className="absolute top-8 right-8">
+            <p className="text-[#C9A55C] font-serif text-lg">
+              Welcome back, {session.user?.name}
+            </p>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="space-y-6 max-w-4xl">
+          <h1 className="text-6xl md:text-7xl font-serif text-white tracking-wider">
+            CozyHotel
+          </h1>
+          <div className="w-24 h-[2px] bg-[#C9A55C] mx-auto"></div>
+          <h3 className="text-2xl md:text-3xl font-serif text-[#C9A55C] tracking-wide">
+            Where Luxury Meets Comfort
+          </h3>
+          <p className="text-gray-300 text-lg md:text-xl font-light max-w-2xl mx-auto">
+            Experience unparalleled elegance and exceptional service at our collection of premium hotels
+          </p>
         </div>
-      ) : null}
-      <button
-        className="bg-[#1A1A1A] text-white font-serif 
-             py-3 px-6 rounded-full z-30 absolute bottom-5 right-5 
-             transition-all duration-300 ease-in-out
-             border border-[#333333] shadow-lg
-             hover:bg-[#2A2A2A] hover:border-[#404040] 
-             hover:text-white transform hover:scale-105 hover:shadow-xl"
-        onClick={() => {
-          router.push("/hotel");
-        }}
-      >
-        Select Your Hotel
-      </button>
+
+        {/* CTA Button */}
+        <div className="absolute bottom-12">
+          <button
+            className="luxury-button"
+            onClick={() => {
+              router.push("/hotel");
+            }}
+          >
+            Discover Our Hotels
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

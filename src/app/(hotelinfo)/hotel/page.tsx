@@ -7,19 +7,19 @@ export default function Car() {
   const hotels = getHotels();
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 p-8">
-      <div className="max-w-6xl mx-auto">
-        
-        <div className="bg-gray-800 rounded-xl shadow-2xl p-6">
+    <main className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
+      <div className="luxury-section">
+        <div className="luxury-card p-8">
           <Suspense 
             fallback={
-              <div className="py-8">
-                <p className="text-[#52D7F7] mb-4">Finding the best hotels for you...</p>
+              <div className="py-12 text-center">
+                <p className="text-[#C9A55C] text-lg font-serif mb-6">Finding the perfect hotels for you...</p>
                 <LinearProgress sx={{ 
                   maxWidth: '400px', 
                   margin: '0 auto',
+                  backgroundColor: 'rgba(201, 165, 92, 0.1)',
                   '& .MuiLinearProgress-bar': {
-                    backgroundColor: '#52D7F7'
+                    backgroundColor: '#C9A55C'
                   }
                 }}/>
               </div>

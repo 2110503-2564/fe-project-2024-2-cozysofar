@@ -9,7 +9,6 @@ export default function RegisterPage(){
     const [email, setEmail] = useState('');
     const [tel, setTel] = useState('');
 
-
     const addUser = async () => {
         const res = await userRegister(name, email, password, tel)
         console.log(res)
@@ -21,26 +20,68 @@ export default function RegisterPage(){
     }
 
     return(
-        <main className = 'bg-gray-100 min-h-screen flex items-center justify-center'>            
-            <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-            <h1 className="text-3xl text-center text-gray-800 mb-6">Register</h1>
-                <form action={addUser} className="space-y-4">
-                    
-                        <label className = 'w-auto block text-gray-700 pr-4' htmlFor='name'>Name</label>
-                        <input type = 'text' required id='name' name='name' placeholder = 'Name' onChange={(event)=>{setName(event.target.value)}} className = 'bg-white border-2 border-gray-200 rounded w-full p-2 text-gray-700 focus:outline-none focus:border-blue-400' />
+        <main className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center p-4">            
+            <div className="bg-[#1A1A1A] p-8 rounded-lg shadow-xl w-full max-w-md border border-[#333333]">
+                <h1 className="text-3xl font-serif text-center text-[#C9A55C] mb-8">Create Account</h1>
+                <form action={addUser} className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="block text-gray-300 font-serif" htmlFor='name'>Name</label>
+                        <input 
+                            type='text' 
+                            required 
+                            id='name' 
+                            name='name' 
+                            placeholder='Enter your name' 
+                            onChange={(event)=>{setName(event.target.value)}} 
+                            className="luxury-input w-full" 
+                        />
+                    </div>
 
-                        <label className = 'w-auto block text-gray-700 pr-4' htmlFor='email'>Email</label>
-                        <input type = 'text' required id='email' name='email' placeholder = 'Email' onChange={(event)=>{setEmail(event.target.value)}} className = 'bg-white border-2 border-gray-200 rounded w-full p-2 text-gray-700 focus:outline-none focus:border-blue-400' />
+                    <div className="space-y-2">
+                        <label className="block text-gray-300 font-serif" htmlFor='email'>Email</label>
+                        <input 
+                            type='email' 
+                            required 
+                            id='email' 
+                            name='email' 
+                            placeholder='Enter your email' 
+                            onChange={(event)=>{setEmail(event.target.value)}} 
+                            className="luxury-input w-full" 
+                        />
+                    </div>
 
-                      
-                        <label className = 'w-auto block text-gray-700 pr-4' htmlFor='password'>Password</label>
-                        <input type = 'text' required id='password' name='password' placeholder = 'password' onChange={(event)=>{setPassword(event.target.value)}} className = 'bg-white border-2 border-gray-200 rounded w-full p-2 text-gray-700 focus:outline-none focus:border-blue-400' />
+                    <div className="space-y-2">
+                        <label className="block text-gray-300 font-serif" htmlFor='password'>Password</label>
+                        <input 
+                            type='password' 
+                            required 
+                            id='password' 
+                            name='password' 
+                            placeholder='Enter your password' 
+                            onChange={(event)=>{setPassword(event.target.value)}} 
+                            className="luxury-input w-full" 
+                        />
+                    </div>
 
+                    <div className="space-y-2">
+                        <label className="block text-gray-300 font-serif" htmlFor='tel'>Phone Number</label>
+                        <input 
+                            type='tel' 
+                            required 
+                            id='tel' 
+                            name='tel' 
+                            placeholder='Enter your phone number' 
+                            onChange={(event)=>{setTel(event.target.value)}} 
+                            className="luxury-input w-full" 
+                        />
+                    </div>
 
-                        <label className = 'w-auto block text-gray-700 pr-4' htmlFor='tel'>Tel</label>
-                        <input type = 'text' required id='tel' name='tel' placeholder = 'tel' onChange={(event)=>{setTel(event.target.value)}} className = 'bg-white border-2 border-gray-200 rounded w-full p-2 text-gray-700 focus:outline-none focus:border-blue-400' />
-
-                    <button type='submit' className='bg-blue-500 hover:bg-blue-700 text-white p-2 rounded' >Register</button>
+                    <button 
+                        type='submit' 
+                        className="luxury-button w-full"
+                    >
+                        Create Account
+                    </button>
                 </form>
             </div>
         </main>

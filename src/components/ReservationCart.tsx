@@ -21,7 +21,6 @@ interface Booking {
 }
 
 export default function ReservationCart() {
-
   const { data: session } = useSession();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,8 +130,11 @@ export default function ReservationCart() {
 
   if (!session) {
     return (
-      <div className="text-center text-[#52D7F7] py-8">
-        Please sign in to view your bookings
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-serif text-[#C9A55C] mb-4">Please Sign In</h2>
+          <p className="text-gray-300">Sign in to view and manage your bookings</p>
+        </div>
       </div>
     );
   }
@@ -141,8 +143,8 @@ export default function ReservationCart() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#52D7F7] mb-4 mx-auto"></div>
-          <div className="text-[#52D7F7] text-lg">Loading your bookings...</div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C9A55C] mb-4 mx-auto"></div>
+          <div className="text-[#C9A55C] text-lg font-serif">Loading your bookings...</div>
         </div>
       </div>
     );
@@ -150,21 +152,107 @@ export default function ReservationCart() {
 
   if (bookings.length === 0) {
     return (
-      <div className="text-center text-[#52D7F7] py-8">
-        You don't have any bookings yet
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-serif text-[#C9A55C] mb-4">No Bookings Yet</h2>
+          <p className="text-gray-300">Start exploring our luxury hotels to make your first booking</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-serif text-[#C9A55C] text-center mb-12">Your Bookings</h1>
+        
+        <div className="space-y-6">
+          {bookings.map((booking) => (
+            <div key={booking._id} className="luxury-card p-6">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+                <div>
+                  <h2 className="text-2xl font-serif text-[#C9A55C] mb-2">{booking.hotel.name}</h2>
+                  <div className="text-gray-300 space-y-1">
+                    <p>Check-in: {new Date(booking.checkinDate).toLocaleDateString()}</p>
+                    <p>Check-out: {new Date(booking.checkoutDate).toLocaleDateString()}</p>
+                    <p>Duration: {calculateDuration(booking.checkinDate, booking.checkoutDate)} days</p>
+                  </div>
+                </div>
+                
+                <div className="flex space-x-4">
+                  <button
+                    onClick={() => handleEdit(booking)}
+                    className="luxury-button"
+                  >
+                    Edit Dates
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(booking)}
+                    className="px-4 py-2 text-red-400 border border-red-400 rounded-full
+                             hover:bg-red-400/10 transition-all duration-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+
+              {editingBooking === booking._id && (
+                <div className="mt-6 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-gray-300 mb-2">Check-in Date</label>
+                      <DatePicker
+                        selected={newCheckinDate}
+                        onChange={(date) => setNewCheckinDate(date)}
+                        className="luxury-input w-full"
+                        dateFormat="MMMM d, yyyy"
+                        minDate={new Date()}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 mb-2">Check-out Date</label>
+                      <DatePicker
+                        selected={newCheckoutDate}
+                        onChange={(date) => setNewCheckoutDate(date)}
+                        className="luxury-input w-full"
+                        dateFormat="MMMM d, yyyy"
+                        minDate={newCheckinDate || new Date()}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      onClick={() => {
+                        setIsEditing(false);
+                        setEditingBooking(null);
+                      }}
+                      className="px-4 py-2 text-gray-300 border border-gray-600 rounded-full
+                               hover:bg-gray-800 transition-all duration-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      className="luxury-button"
+                      disabled={editLoading}
+                    >
+                      {editLoading ? "Saving..." : "Save Changes"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Success Message */}
       {showSuccess && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl text-center relative">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+          <div className="bg-[#1A1A1A] p-8 rounded-lg shadow-xl text-center relative border border-[#C9A55C]/30">
             <button
               onClick={() => setShowSuccess(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 transition-colors"
+              className="absolute top-4 right-4 text-gray-400 hover:text-[#C9A55C] transition-colors"
               aria-label="Close"
             >
               <svg
@@ -180,18 +268,18 @@ export default function ReservationCart() {
                 />
               </svg>
             </button>
-            <div className="text-green-600 text-2xl mb-4">✓</div>
-            <p className="text-gray-800 font-medium">{successMessage}</p>
+            <div className="text-[#C9A55C] text-4xl mb-4">✓</div>
+            <p className="text-gray-300 font-serif">{successMessage}</p>
           </div>
         </div>
       )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && bookingToDelete && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-[#181A1B] p-6 rounded-lg w-96 border border-[#52D7F7] shadow-lg">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+          <div className="bg-[#1A1A1A] p-8 rounded-lg w-96 border border-[#C9A55C]/30">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-red-100">
+              <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-red-500/10">
                 <svg
                   className="w-8 h-8 text-red-500"
                   fill="none"
@@ -206,33 +294,32 @@ export default function ReservationCart() {
                   />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-[#52D7F7] mb-2">
+              <h2 className="text-2xl font-serif text-[#C9A55C] mb-4">
                 Delete Booking
               </h2>
-              <p className="text-gray-400">
+              <p className="text-gray-300">
                 Are you sure you want to delete your booking at{" "}
-                <span className="text-[#52D7F7]">
+                <span className="text-[#C9A55C]">
                   {bookingToDelete.hotel.name}
                 </span>
                 ?
               </p>
-              <p className="text-gray-400 mt-2 text-sm">
-                Check-in:{" "}
-                {new Date(bookingToDelete.checkinDate).toLocaleDateString()}
+              <p className="text-gray-400 mt-4 text-sm">
+                Check-in: {new Date(bookingToDelete.checkinDate).toLocaleDateString()}
                 <br />
-                Check-out:{" "}
-                {new Date(bookingToDelete.checkoutDate).toLocaleDateString()}
+                Check-out: {new Date(bookingToDelete.checkoutDate).toLocaleDateString()}
               </p>
             </div>
-            <div className="flex space-x-3 justify-center">
+            <div className="flex space-x-4 justify-center">
               <button
                 onClick={handleDelete}
-                className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 transition-colors flex items-center justify-center min-w-[100px]"
+                className="px-6 py-2 text-red-400 border border-red-400 rounded-full
+                         hover:bg-red-400/10 transition-all duration-300"
                 disabled={deleteLoading === bookingToDelete._id}
               >
                 {deleteLoading === bookingToDelete._id ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400 mr-2"></div>
                     Deleting...
                   </>
                 ) : (
@@ -244,115 +331,12 @@ export default function ReservationCart() {
                   setShowDeleteConfirm(false);
                   setBookingToDelete(null);
                 }}
-                className="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700 transition-colors"
+                className="px-6 py-2 text-gray-300 border border-gray-600 rounded-full
+                         hover:bg-gray-800 transition-all duration-300"
                 disabled={deleteLoading === bookingToDelete._id}
               >
                 Cancel
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {bookings.map((booking) => (
-        <div
-          className="bg-[#181A1B] text-[#52D7F7] border border-[#52D7F7] 
-          rounded px-5 mx-5 py-4 my-3"
-          key={booking._id}
-        >
-          {booking.hotel ? (
-            <div className="text-xl font-semibold">{booking.hotel.name}</div>
-          ) : (
-            <div className="text-xl font-semibold">Unknown Hotel</div>
-          )}
-          {session.user.role === "admin" ? (
-            <div className="text-md">
-              Reservation Owner: {booking.user.name}
-            </div>
-          ) : null}
-          <div className="text-md">
-            Duration:{calculateDuration(booking.checkinDate, booking.checkoutDate)} days
-          </div>
-          <div className="text-md">
-            Check-in: {new Date(booking.checkinDate).toLocaleDateString()}
-          </div>
-          <div className="text-md">
-            Check-out: {new Date(booking.checkoutDate).toLocaleDateString()}
-          </div>
-          <div className="flex space-x-3 mt-3">
-            <button
-              onClick={() => handleEdit(booking)}
-              className="bg-[#52D7F7] text-[#181A1B] px-4 py-2 rounded hover:bg-[#3BC1E5] transition-colors"
-            >
-              Edit Dates
-            </button>
-            <button
-              onClick={() => handleDeleteClick(booking)}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-            >
-              Delete Booking
-            </button>
-          </div>
-        </div>
-      ))}
-
-      {/* Edit Modal */}
-      {isEditing && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-          <div className="bg-[#181A1B] p-6 rounded-lg w-96">
-            <h2 className="text-[#52D7F7] text-xl mb-4">Edit Booking Dates</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[#52D7F7] mb-2">
-                  Check-in Date
-                </label>
-                <DatePicker
-                  selected={newCheckinDate}
-                  onChange={(date: Date | null) => setNewCheckinDate(date)}
-                  className="w-full p-2 rounded bg-[#242628] text-[#52D7F7] border border-[#52D7F7]"
-                  dateFormat="MM/dd/yyyy"
-                  disabled={editLoading}
-                />
-              </div>
-              <div>
-                <label className="block text-[#52D7F7] mb-2">
-                  Check-out Date
-                </label>
-                <DatePicker
-                  selected={newCheckoutDate}
-                  onChange={(date: Date | null) => setNewCheckoutDate(date)}
-                  className="w-full p-2 rounded bg-[#242628] text-[#52D7F7] border border-[#52D7F7]"
-                  dateFormat="MM/dd/yyyy"
-                  minDate={newCheckinDate || new Date()}
-                  disabled={editLoading}
-                />
-              </div>
-              <div className="flex space-x-3">
-                <button
-                  onClick={handleSave}
-                  className="bg-[#52D7F7] text-[#181A1B] px-4 py-2 rounded hover:bg-[#3BC1E5] transition-colors flex items-center justify-center min-w-[100px]"
-                  disabled={editLoading}
-                >
-                  {editLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#181A1B] mr-2"></div>
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </button>
-                <button
-                  onClick={() => {
-                    setIsEditing(false);
-                    setEditingBooking(null);
-                  }}
-                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors"
-                  disabled={editLoading}
-                >
-                  Cancel
-                </button>
-              </div>
             </div>
           </div>
         </div>
