@@ -1,5 +1,5 @@
 "use client";
-import BookingCart from "@/components/ReservationCart";
+import BookingCart from "@/components/BookingCart";
 
 export default function CartPage() {
   return (

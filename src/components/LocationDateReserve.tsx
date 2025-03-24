@@ -27,6 +27,7 @@ export default function LocationDateReserve({
             setReserveDate(value);
             onDateChange(value);
           }}
+          format="DD/MM/YYYY"
           disablePast
           minDate={minDate || dayjs()}
           sx={{

@@ -152,7 +152,7 @@ export default function ReservationCart() {
 
   if (bookings.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
         <div className="text-center">
           <h2 className="text-2xl font-serif text-[#C9A55C] mb-4">No Bookings Yet</h2>
           <p className="text-gray-300">Start exploring our luxury hotels to make your first booking</p>
@@ -205,7 +205,7 @@ export default function ReservationCart() {
                         selected={newCheckinDate}
                         onChange={(date) => setNewCheckinDate(date)}
                         className="luxury-input w-full"
-                        dateFormat="MMMM d, yyyy"
+                        dateFormat="d MMMM yyyy"
                         minDate={new Date()}
                       />
                     </div>
@@ -215,7 +215,7 @@ export default function ReservationCart() {
                         selected={newCheckoutDate}
                         onChange={(date) => setNewCheckoutDate(date)}
                         className="luxury-input w-full"
-                        dateFormat="MMMM d, yyyy"
+                        dateFormat="d MMMM yyyy"
                         minDate={newCheckinDate || new Date()}
                       />
                     </div>

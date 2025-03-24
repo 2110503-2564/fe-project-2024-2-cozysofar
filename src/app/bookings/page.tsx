@@ -54,7 +54,6 @@ export default function Reservations() {
     fetchHotelName();
   }, [cid]);
 
-  // Add a debug log for hotelName changes
   useEffect(() => {
     console.log("hotelName changed to:", hotelName);
   }, [hotelName]);
@@ -120,33 +119,31 @@ export default function Reservations() {
   const [pickupDate, setPickupDate] = useState<Dayjs | null>(null);
   const [returnDate, setReturnDate] = useState<Dayjs | null>(null);
   return (
-    <main className="min-h-screen">
+    <main className="w-full min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
       {showSuccess && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl text-center">
-            <div className="text-green-600 text-2xl mb-4">✓</div>
-            <p className="text-gray-800 font-medium">Reservation successful!</p>
-            <p className="text-gray-600 text-sm mt-2">
+          <div className="luxury-card p-8 text-center">
+            <div className="text-[#C9A55C] text-4xl mb-4">✓</div>
+            <p className="text-[#C9A55C] text-xl font-serif mb-2">Reservation successful!</p>
+            <p className="text-gray-300 text-sm">
               Redirecting to your reservations...
             </p>
           </div>
         </div>
       )}
 
-      <div className="max-w-4xl mx-auto px-4 py-16">
+      <div className="luxury-section">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-light text-white mb-4 tracking-[0.2em] uppercase">
-            New Reservation
-          </h1>
-          <div className="w-24 h-[1px] bg-[#52D7F7] mx-auto mb-4"></div>
-          <p className="text-[#52D7F7] text-lg font-light tracking-[0.1em] uppercase">
+          <h1 className="text-5xl font-serif text-[#C9A55C] mb-6">New Reservation</h1>
+          <div className="w-24 h-[2px] bg-[#C9A55C] mx-auto mb-6"></div>
+          <p className="text-[#C9A55C] text-xl font-serif">
             {hotelName}
           </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-8 space-y-8">
+        <div className="luxury-card p-8 space-y-8 max-w-2xl mx-auto">
           <div className="space-y-4">
-            <div className="text-[#52D7F7] text-lg font-light tracking-[0.1em] uppercase">
+            <div className="text-[#C9A55C] text-xl font-serif">
               Check-in Date
             </div>
             <LocationDateReserve
@@ -160,7 +157,7 @@ export default function Reservations() {
           </div>
 
           <div className="space-y-4">
-            <div className="text-[#52D7F7] text-lg font-light tracking-[0.1em] uppercase">
+            <div className="text-[#C9A55C] text-xl font-serif">
               Check-out Date
             </div>
             <LocationDateReserve
@@ -177,11 +174,7 @@ export default function Reservations() {
 
           <div className="pt-4">
             <button
-              className="w-full bg-gray-900 text-white border border-white 
-              font-light py-3 px-6 rounded tracking-[0.2em] uppercase
-              hover:bg-white hover:text-gray-900 transition-all duration-500
-              disabled:opacity-50 disabled:cursor-not-allowed
-              relative"
+              className="luxury-button w-full relative"
               onClick={makeReservation}
               disabled={
                 !cid || !model || !pickupDate || !returnDate || isLoading
@@ -189,7 +182,7 @@ export default function Reservations() {
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#C9A55C] mr-2"></div>
                   Processing...
                 </div>
               ) : (
