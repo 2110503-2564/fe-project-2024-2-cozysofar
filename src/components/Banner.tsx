@@ -8,7 +8,7 @@ export default function Banner() {
   const { data: session } = useSession();
 
   return (
-    <div className="block w-screen h-[80vh] relative p-1 m-0">
+    <div className="relative w-full h-[calc(100vh-64px)]">
       <video
         autoPlay
         loop
@@ -18,18 +18,14 @@ export default function Banner() {
       >
         <source src="https://media.iceportal.com/138346/Videos/video040524214954517_1080p.mp4" type="video/mp4" />
       </video>
-      <div
-        className="relative top-[45%] z-20 text-center"
-      >
+      <div className="relative top-[40%] z-20 text-center">
         <h1 className="text-4xl font-serif text-white">CozyHotel</h1>
         <h3 className="text-xl font-serif text-white">
           At CozyHotel, you always feel at home
         </h3>
       </div>
       {session ? (
-        <div
-          className="z-30 absolute top-5 right-10 font-serif text-white text-xl"
-        >
+        <div className="z-30 absolute top-5 right-10 font-serif text-white text-xl">
           Hello {session.user?.name}
         </div>
       ) : null}
