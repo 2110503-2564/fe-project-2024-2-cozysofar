@@ -187,12 +187,17 @@ export default function ReservationCart() {
                     {booking.hotel.name}
                   </h2>
                   <div className="text-gray-300 space-y-1">
-                    { session.user.role === "admin"?
-                    <p>
-                      Booking owner:{" "}
-                      {booking.user.name || booking.user.email}
-                    </p>: null
-                    }
+                    {session.user.role === "admin" ? (
+                      <p className=" text-gray-400">
+                        Booking id: {booking._id}
+                      </p>
+                    ) : null}
+                    {session.user.role === "admin" ? (
+                      <p>
+                        Booking owner: {booking.user.name || booking.user.email}{" "}
+                        ({booking.user.email})
+                      </p>
+                    ) : null}
                     <p>
                       Check-in:{" "}
                       {new Date(booking.checkinDate).toLocaleDateString()}
