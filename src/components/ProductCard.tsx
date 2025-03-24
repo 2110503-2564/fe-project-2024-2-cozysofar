@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import InteractiveCard from "./InteractiveCard";
 
 export default function ProductCard({
   carName,
@@ -16,7 +15,21 @@ export default function ProductCard({
   }
 
   return (
-    <InteractiveCard contentName={carName}>
+    <div
+      className="w-full h-[300px] rounded-lg bg-[#1A1A1A] border border-[#333333]
+                 shadow-lg shadow-black/20 cursor-pointer transition-all duration-300
+                 hover:border-[#C9A55C]/30 hover:shadow-[0_0_40px_rgba(201,165,92,0.1)]
+                 transform hover:-translate-y-1"
+      onClick={onCarSelected}
+      onMouseOver={(e) => {
+        e.currentTarget.classList.remove("shadow-lg");
+        e.currentTarget.classList.add("shadow-2xl");
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.classList.remove("shadow-2xl");
+        e.currentTarget.classList.add("shadow-lg");
+      }}
+    >
       <div className="w-full h-[70%] relative rounded-t-lg overflow-hidden">
         <Image
           src={imgSrc}
@@ -45,6 +58,6 @@ export default function ProductCard({
       ) : (
         ""
       )}
-    </InteractiveCard>
+    </div>
   );
 }

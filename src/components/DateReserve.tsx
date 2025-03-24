@@ -5,13 +5,11 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 
-export default function LocationDateReserve({
+export default function DateReserve({
   onDateChange,
-  onLocationChange,
   minDate,
 }: {
   onDateChange: Function;
-  onLocationChange: Function;
   minDate?: Dayjs;
 }) {
   const [reserveDate, setReserveDate] = useState<Dayjs | null>(null);

@@ -1,5 +1,5 @@
 "use client";
-import LocationDateReserve from "@/components/LocationDateReserve";
+import DateReserve from "@/components/DateReserve";
 import dayjs, { Dayjs } from "dayjs";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -11,7 +11,6 @@ export default function Reservations() {
   const router = useRouter();
   const { data: session } = useSession();
   const cid = urlParams.get("id");
-  const model = urlParams.get("model");
   const [hotelName, setHotelName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -60,7 +59,7 @@ export default function Reservations() {
       return;
     }
 
-    if (cid && model && pickupDate && returnDate) {
+    if (cid && pickupDate && returnDate) {
       if (returnDate.isBefore(pickupDate)) {
         alert("Check-out date must be after check-in date");
         return;
@@ -133,12 +132,11 @@ export default function Reservations() {
             <div className="text-[#C9A55C] text-xl font-serif">
               Check-in Date
             </div>
-            <LocationDateReserve
+            <DateReserve
               onDateChange={(value: Dayjs) => {
                 setPickupDate(value);
                 setReturnDate(null); // Reset return date if pickup date changes
               }}
-              onLocationChange={() => {}}
               minDate={dayjs()} // Check-in date can't be in the past
             />
           </div>
@@ -147,11 +145,10 @@ export default function Reservations() {
             <div className="text-[#C9A55C] text-xl font-serif">
               Check-out Date
             </div>
-            <LocationDateReserve
+            <DateReserve
               onDateChange={(value: Dayjs) => {
                 setReturnDate(value);
               }}
-              onLocationChange={() => {}}
               minDate={
                 pickupDate ? pickupDate.add(1, "day") : dayjs().add(1, "day")
               }
@@ -164,7 +161,7 @@ export default function Reservations() {
               className="luxury-button w-full relative"
               onClick={makeReservation}
               disabled={
-                !cid || !model || !pickupDate || !returnDate || isLoading
+                !cid || !pickupDate || !returnDate || isLoading
               }
             >
               {isLoading ? (
