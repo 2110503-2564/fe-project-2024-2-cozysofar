@@ -1,12 +1,8 @@
 "use client";
 import LocationDateReserve from "@/components/LocationDateReserve";
-import { AppDispatch } from "@/redux/store";
 import dayjs, { Dayjs } from "dayjs";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { ReservationItem } from "../../../interface";
-import { addReservation } from "@/redux/features/cartSlice";
 import { useSession } from "next-auth/react";
 import createBooking from "@/libs/booking/createBooking";
 
@@ -19,7 +15,6 @@ export default function Reservations() {
   const [hotelName, setHotelName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const fetchHotelName = async () => {
@@ -92,14 +87,6 @@ export default function Reservations() {
           session.user.token
         );
 
-        const item: ReservationItem = {
-          carId: cid,
-          carModel: model,
-          numofDays: returnDate.diff(pickupDate, "day"),
-          pickupDate: dayjs(pickupDate).format("YYYY/MM/DD"),
-          returnDate: dayjs(returnDate).format("YYYY/MM/DD"),
-        };
-        dispatch(addReservation(item));
         setShowSuccess(true);
         setTimeout(() => {
           router.push("/cart");

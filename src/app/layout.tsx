@@ -6,7 +6,6 @@ import { getServerSession } from "next-auth";
 import { AuthOptions } from "next-auth";
 import NextAuthProvider from "@/provider/NextAuthProvider";
 import { authOptions } from "../app/api/auth/[...nextauth]/authOptions";
-import ReduxProvider from "@/redux/ReduxProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,12 +27,10 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ReduxProvider>
-          <NextAuthProvider session={session}>
-            <TopMenu />
-            {children}
-          </NextAuthProvider>
-        </ReduxProvider>
+        <NextAuthProvider session={session}>
+          <TopMenu />
+          {children}
+        </NextAuthProvider>
       </body>
     </html>
   );
