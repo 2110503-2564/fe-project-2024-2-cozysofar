@@ -1,9 +1,13 @@
-export default async function createBooking(
-  hotelId: string,
-  bookingData: {
-    startDate: string;
-    endDate: string;
-    user: string;
+export default async function createHotel(
+  hotelData: {
+    name: string;
+    address: string;
+    district: string;
+    province: string;
+    postalcode: string;
+    tel?: string;
+    picture: string;
+    description: string;
   },
   token: string
 ) {
@@ -12,20 +16,22 @@ export default async function createBooking(
   }
 
   const requestBody = {
-    checkinDate: bookingData.startDate,
-    checkoutDate: bookingData.endDate,
-    user: bookingData.user,
+    name: hotelData.name,
+    address: hotelData.address,
+    district: hotelData.district,
+    province: hotelData.province,
+    postalcode: hotelData.postalcode,
+    tel: hotelData.tel,
+    picture: hotelData.picture,
+    description: hotelData.description,
   };
 
-  console.log(
-    "Request URL:",
-    `https://cozyhotel-be.vercel.app/api/v1/hotels/${hotelId}/bookings/`
-  );
+  console.log("Request URL:", `https://cozyhotel-be.vercel.app/api/v1/hotels/`);
   console.log("Request Body:", requestBody);
   console.log("Token:", token);
 
   const response = await fetch(
-    `https://cozyhotel-be.vercel.app/api/v1/hotels/${hotelId}/bookings/`,
+    `https://cozyhotel-be.vercel.app/api/v1/hotels/`,
     {
       method: "POST",
       headers: {

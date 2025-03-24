@@ -1,12 +1,12 @@
-interface EditBookingParams {
+interface UpdateBookingParams {
     checkinDate: string;
     checkoutDate: string;
 }
 
-export default async function editBooking(
+export default async function updateBooking(
     bookingId: string,
     token: string,
-    bookingData: EditBookingParams
+    bookingData: UpdateBookingParams
 ) {
     const response = await fetch(`https://cozyhotel-be.vercel.app/api/v1/bookings/${bookingId}`, {
         method: 'PUT',

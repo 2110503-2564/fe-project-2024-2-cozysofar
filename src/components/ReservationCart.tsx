@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import getBookings from "@/libs/booking/getBookings";
-import editBooking from "@/libs/booking/editBooking";
+import editBooking from "@/libs/booking/updateBooking";
 import deleteBooking from "@/libs/booking/deleteBooking";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
