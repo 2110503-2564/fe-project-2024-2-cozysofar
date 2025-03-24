@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux";
 import { ReservationItem } from "../../../interface";
 import { addReservation } from "@/redux/features/cartSlice";
 import { useSession } from "next-auth/react";
-import createBooking from "@/libs/createBooking";
+import createBooking from "@/libs/booking/createBooking";
 
 export default function Reservations() {
   const urlParams = useSearchParams();

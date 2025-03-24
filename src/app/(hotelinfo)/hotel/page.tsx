@@ -1,5 +1,5 @@
 import HotelCatalog from "@/components/HotelCatalog";
-import getHotels from "@/libs/getHotels";
+import getHotels from "@/libs/hotel/getHotels";
 import { Suspense } from "react";
 import { LinearProgress } from "@mui/material";
 

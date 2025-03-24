@@ -1,7 +1,7 @@
 "use client"
 import { redirect } from "next/navigation";
 import { useState } from "react";
-import userRegister from "@/libs/userRegister";
+import userRegister from "@/libs/account/userRegister";
 
 export default function RegisterPage(){
     const [name, setName] = useState('');

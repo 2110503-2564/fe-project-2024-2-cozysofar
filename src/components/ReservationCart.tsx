@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import getBookings from "@/libs/getBookings";
-import editBooking from "@/libs/editBooking";
-import deleteBooking from "@/libs/deleteBooking";
+import getBookings from "@/libs/booking/getBookings";
+import editBooking from "@/libs/booking/editBooking";
+import deleteBooking from "@/libs/booking/deleteBooking";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 

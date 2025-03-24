@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { AuthOptions } from "next-auth";
-import getUserProfile from "@/libs/getUserProfile";
+import getUserProfile from "@/libs/account/getUserProfile";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 
 export default async function DashboardPage() {

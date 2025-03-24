@@ -1,5 +1,5 @@
 import Image from "next/image";
-import getHotel from "@/libs/getHotel";
+import getHotel from "@/libs/hotel/getHotel";
 import Link from "next/link";
 
 export default async function HotelDetailPage({
