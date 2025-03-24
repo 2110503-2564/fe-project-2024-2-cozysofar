@@ -17,6 +17,8 @@ export default function Reservations() {
   const cid = urlParams.get("id");
   const model = urlParams.get("model");
   const [hotelName, setHotelName] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
@@ -70,6 +72,7 @@ export default function Reservations() {
         return;
       }
 
+      setIsLoading(true);
       try {
         console.log('Making reservation with data:', {
           cid,
@@ -94,20 +97,33 @@ export default function Reservations() {
           returnDate: dayjs(returnDate).format("YYYY/MM/DD"),
         };
         dispatch(addReservation(item));
-        alert("Reservation added successfully!");
-        router.push("/reservations/manage");
+        setShowSuccess(true);
+        setTimeout(() => {
+          router.push("/cart");
+        }, 2000);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to create reservation. Please try again.";
         alert(errorMessage);
         console.error("Reservation error:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
   const [pickupDate, setPickupDate] = useState<Dayjs | null>(null);
   const [returnDate, setReturnDate] = useState<Dayjs | null>(null);
   return (
-    
-    <main className="min-h-screen ">
+    <main className="min-h-screen">
+      {showSuccess && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl text-center">
+            <div className="text-green-600 text-2xl mb-4">✓</div>
+            <p className="text-gray-800 font-medium">Reservation successful!</p>
+            <p className="text-gray-600 text-sm mt-2">Redirecting to your reservations...</p>
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-4xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-light text-white mb-4 tracking-[0.2em] uppercase">
@@ -149,11 +165,19 @@ export default function Reservations() {
               className="w-full bg-gray-900 text-white border border-white 
               font-light py-3 px-6 rounded tracking-[0.2em] uppercase
               hover:bg-white hover:text-gray-900 transition-all duration-500
-              disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled:opacity-50 disabled:cursor-not-allowed
+              relative"
               onClick={makeReservation}
-              disabled={!cid || !model || !pickupDate || !returnDate}
+              disabled={!cid || !model || !pickupDate || !returnDate || isLoading}
             >
-              Reserve This Hotel
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Processing...
+                </div>
+              ) : (
+                "Reserve This Hotel"
+              )}
             </button>
           </div>
         </div>
