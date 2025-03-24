@@ -3,9 +3,7 @@ export interface ReservationItem {
   carModel: string;
   numofDays: number;
   pickupDate: string;
-  pickupLocation: string;
   returnDate: string;
-  returnLocation: string;
 }
 
 export interface CarItem {

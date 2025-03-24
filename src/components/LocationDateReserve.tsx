@@ -3,7 +3,6 @@ import { useState } from "react";
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Select, MenuItem } from "@mui/material";
 import { Dayjs } from "dayjs";
 
 export default function LocationDateReserve({
@@ -14,34 +13,41 @@ export default function LocationDateReserve({
   onLocationChange: Function;
 }) {
   const [reserveDate, setReserveDate] = useState<Dayjs | null>(null);
-  const [location, setLocation] = useState("BKK");
   return (
-    <div className="bg-slate-100 rounded-lg space-x-5 space-y-2 w-fit px-10 py-5 flex flex-row justify-center shadow-white">
+    <div className="w-full">
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
-          className="bg-white"
+          className="w-full border border-gray-700 rounded-lg px-4 py-2 text-white
+          focus:outline-none focus:border-[#52D7F7] focus:ring-1 focus:ring-[#52D7F7]
+          hover:border-[#52D7F7]/50 transition-all duration-300"
           value={reserveDate}
           onChange={(value) => {
             setReserveDate(value);
             onDateChange(value);
           }}
+          sx={{
+            '& .MuiInputBase-root': {
+              color: 'white',
+              '&:hover': {
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#52D7F7',
+                },
+              },
+              '&.Mui-focused': {
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#52D7F7',
+                },
+              },
+            },
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#374151',
+            },
+            '& .MuiSvgIcon-root': {
+              color: '#52D7F7',
+            },
+          }}
         />
       </LocalizationProvider>
-      <Select
-        variant="standard"
-        name="location"
-        id="location"
-        value={location}
-        onChange={(e) => {
-          setLocation(e.target.value);
-          onLocationChange(e.target.value);
-        }}
-        className="h-[2em] w-[200px]"
-      >
-        <MenuItem value="BKK">Bangkok</MenuItem>
-        <MenuItem value="CNX">Chiang Mai</MenuItem>
-        <MenuItem value="HKT">Phuket</MenuItem>
-      </Select>
     </div>
   );
 }
