@@ -7,8 +7,10 @@ import createHotel from '@/libs/hotel/createHotel';
 import editHotel from '@/libs/hotel/updateHotel';
 import deleteHotel from '@/libs/hotel/deleteHotel';
 import getBookingsByHotel from '@/libs/booking/getBookingsByHotel';
+import editBooking from '@/libs/booking/editBooking';
 import { Hotel, HotelUpdate, Booking } from '@/types';
 import LoadingSpinner from './LoadingSpinner';
+import SearchBar from '../SearchBar';
 
 export default function HotelManagement() {
   const { data: session } = useSession();
@@ -54,6 +56,23 @@ export default function HotelManagement() {
   const [bookingPage, setBookingPage] = useState(1);
   const [totalBookings, setTotalBookings] = useState(0);
   const bookingsPerPage = 6; // Match backend pagination
+  const [hotelSearchTerm, setHotelSearchTerm] = useState('');
+  const [isDeletingBooking, setIsDeletingBooking] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [allHotels, setAllHotels] = useState<Hotel[]>([]);
+  const [allBookings, setAllBookings] = useState<Booking[]>([]);
+  const [isEditingBooking, setIsEditingBooking] = useState(false);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [bookingFormData, setBookingFormData] = useState({
+    checkinDate: '',
+    checkoutDate: '',
+  });
+  const [isUpdatingBooking, setIsUpdatingBooking] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
+  const [showHotelSuccessMessage, setShowHotelSuccessMessage] = useState(false);
 
   const validateForm = (data: typeof formData) => {
     if (data.name.length > 50) {
@@ -98,9 +117,34 @@ export default function HotelManagement() {
   const router = useRouter();
 
   useEffect(() => {
+    if (session?.user?.token) {
+      fetchAllHotels();
+    } else {
+      setIsLoading(false);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (session?.user?.token && !hotelSearchTerm) {
+      fetchHotels();
+    } else {
+      setIsLoading(false);
+    }
+  }, [session, currentPage, hotelSearchTerm]);
+
+  const fetchAllHotels = async () => {
     if (!session?.user?.token) return;
-    fetchHotels();
-  }, [session, currentPage]);
+    try {
+      setIsLoading(true);
+      const response = await getHotels(1, 1000); // Fetch a large number of hotels
+      setAllHotels(response.data);
+      setTotalItems(response.count);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching all hotels:', error);
+      setIsLoading(false);
+    }
+  };
 
   const fetchHotels = async () => {
     if (!session?.user?.token) return;
@@ -138,6 +182,8 @@ export default function HotelManagement() {
 
       if (editState.isEditing && editState.editingId) {
         await editHotel(editState.editingId, hotelData, session.user.token);
+        setShowHotelSuccessMessage(true);
+        setTimeout(() => setShowHotelSuccessMessage(false), 3000);
       } else {
         await createHotel(hotelData, session.user.token);
       }
@@ -157,7 +203,10 @@ export default function HotelManagement() {
         picture: '',
         description: ''
       });
-      fetchHotels();
+
+      // Refresh both filtered and all hotels
+      await fetchHotels();
+      await fetchAllHotels();
     } catch (error) {
       console.log('Error saving hotel:', error);
       alert('Failed to save hotel. Please try again.');
@@ -199,6 +248,11 @@ export default function HotelManagement() {
     setBookingsLoading(true);
     setSelectedHotel(hotels.find(h => h._id === hotelId) || null);
     try {
+      // Fetch all bookings for searching
+      const allBookingsResponse = await getBookingsByHotel(hotelId, session.user.token, 1, 1000);
+      setAllBookings(allBookingsResponse.data);
+      
+      // Fetch paginated bookings for display
       const response = await getBookingsByHotel(hotelId, session.user.token, bookingPage, bookingsPerPage);
       setSelectedHotelBookings(response.data);
       setTotalBookings(response.count);
@@ -255,39 +309,22 @@ export default function HotelManagement() {
     setSortDirection('asc');
   };
 
-  const filteredBookings = selectedHotelBookings
-    .filter(booking => {
-      const guestName = typeof booking.user === 'object' && booking.user.name 
-        ? booking.user.name.toLowerCase() 
-        : '';
-      
-      const matchesGuestName = searchTerm 
-        ? guestName.includes(searchTerm.toLowerCase())
-        : true;
-      
-      const matchesBookingId = searchBookingId 
-        ? booking._id.toLowerCase().includes(searchBookingId.toLowerCase())
-        : true;
-
-      let matchesDateRange = true;
-      if (searchDateRange.start && searchDateRange.end) {
-        const bookingStart = new Date(booking.checkinDate);
-        const bookingEnd = new Date(booking.checkoutDate);
-        const searchStart = new Date(searchDateRange.start);
-        const searchEnd = new Date(searchDateRange.end);
+  const filteredBookings = searchTerm || searchDateRange.start || searchDateRange.end || searchBookingId
+    ? allBookings.filter(booking => {
+        const user = booking.user;
+        const matchesSearchTerm = !searchTerm || 
+          (typeof user === 'object' && user !== null && 'name' in user && user.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (typeof user === 'object' && user !== null && 'email' in user && user.email?.toLowerCase().includes(searchTerm.toLowerCase()));
         
-        matchesDateRange = bookingStart >= searchStart && bookingEnd <= searchEnd;
-      }
+        const matchesDateRange = (!searchDateRange.start || new Date(booking.checkinDate) >= new Date(searchDateRange.start)) &&
+          (!searchDateRange.end || new Date(booking.checkoutDate) <= new Date(searchDateRange.end));
+        
+        const matchesBookingId = !searchBookingId || 
+          booking._id.toLowerCase().includes(searchBookingId.toLowerCase());
 
-      return matchesGuestName && matchesBookingId && matchesDateRange;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a[sortField]);
-      const dateB = new Date(b[sortField]);
-      return sortDirection === 'asc' 
-        ? dateA.getTime() - dateB.getTime()
-        : dateB.getTime() - dateA.getTime();
-    });
+        return matchesSearchTerm && matchesDateRange && matchesBookingId;
+      })
+    : selectedHotelBookings;
 
   const handleCloseModal = () => {
     setIsViewingBookings(false);
@@ -379,6 +416,120 @@ export default function HotelManagement() {
     );
   };
 
+  const filteredHotels = hotelSearchTerm
+    ? allHotels.filter(hotel => 
+        hotel.name.toLowerCase().includes(hotelSearchTerm.toLowerCase()) ||
+        hotel.address.toLowerCase().includes(hotelSearchTerm.toLowerCase()) ||
+        hotel.district.toLowerCase().includes(hotelSearchTerm.toLowerCase()) ||
+        hotel.province.toLowerCase().includes(hotelSearchTerm.toLowerCase())
+      )
+    : hotels;
+
+  const handleDeleteBooking = async (bookingId: string) => {
+    if (!session?.user?.token || !selectedHotel) return;
+    const booking = filteredBookings.find(b => b._id === bookingId);
+    if (booking) {
+      setBookingToDelete(booking);
+      setShowDeleteConfirm(true);
+    }
+  };
+
+  const confirmDeleteBooking = async () => {
+    if (!session?.user?.token || !selectedHotel || !bookingToDelete) return;
+    
+    setIsDeletingBooking(true);
+    try {
+      await fetch(`https://cozyhotel-be.vercel.app/api/v1/bookings/${bookingToDelete._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.user.token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      // Refresh bookings after deletion
+      const response = await getBookingsByHotel(selectedHotel._id, session.user.token, bookingPage, bookingsPerPage);
+      setSelectedHotelBookings(response.data);
+      setTotalBookings(response.count);
+      
+      // Also refresh all bookings for search
+      const allBookingsResponse = await getBookingsByHotel(selectedHotel._id, session.user.token, 1, 1000);
+      setAllBookings(allBookingsResponse.data);
+
+      // Show success message
+      setShowDeleteSuccess(true);
+      setTimeout(() => setShowDeleteSuccess(false), 3000);
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      alert('Failed to delete booking');
+    } finally {
+      setIsDeletingBooking(false);
+      setShowDeleteConfirm(false);
+      setBookingToDelete(null);
+    }
+  };
+
+  const handleEditBooking = (booking: Booking) => {
+    setEditingBooking(booking);
+    setBookingFormData({
+      checkinDate: new Date(booking.checkinDate).toISOString().split('T')[0],
+      checkoutDate: new Date(booking.checkoutDate).toISOString().split('T')[0],
+    });
+    setIsEditingBooking(true);
+  };
+
+  const handleUpdateBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!session?.user?.token || !editingBooking || !selectedHotel) return;
+
+    setIsUpdatingBooking(true);
+    try {
+      await editBooking(
+        editingBooking._id,
+        {
+          checkinDate: new Date(bookingFormData.checkinDate),
+          checkoutDate: new Date(bookingFormData.checkoutDate),
+        },
+        session.user.token
+      );
+
+      // Refresh bookings after update
+      const response = await getBookingsByHotel(selectedHotel._id, session.user.token, bookingPage, bookingsPerPage);
+      setSelectedHotelBookings(response.data);
+      setTotalBookings(response.count);
+      
+      // Also refresh all bookings for search
+      const allBookingsResponse = await getBookingsByHotel(selectedHotel._id, session.user.token, 1, 1000);
+      setAllBookings(allBookingsResponse.data);
+
+      setIsEditingBooking(false);
+      setEditingBooking(null);
+      setBookingFormData({
+        checkinDate: '',
+        checkoutDate: '',
+      });
+
+      // Show success message
+      setShowSuccessMessage(true);
+      // Hide success message after 3 seconds
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    } catch (error) {
+      console.error('Error updating booking:', error);
+      alert('Failed to update booking');
+    } finally {
+      setIsUpdatingBooking(false);
+    }
+  };
+
+  const handleCancelEditBooking = () => {
+    setIsEditingBooking(false);
+    setEditingBooking(null);
+    setBookingFormData({
+      checkinDate: '',
+      checkoutDate: '',
+    });
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -389,7 +540,111 @@ export default function HotelManagement() {
 
   return (
     <div>
+      {/* Success Messages */}
+      {showHotelSuccessMessage && (
+        <div className="fixed top-4 right-4 bg-green-900/20 border border-green-500 text-green-500 px-4 py-2 rounded-lg shadow-lg z-[9999] flex items-center space-x-2">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Hotel updated successfully!</span>
+        </div>
+      )}
+
+      {showSuccessMessage && (
+        <div className="fixed top-4 right-4 bg-green-900/20 border border-green-500 text-green-500 px-4 py-2 rounded-lg shadow-lg z-[9999] flex items-center space-x-2">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Booking updated successfully!</span>
+        </div>
+      )}
+
+      {showDeleteSuccess && (
+        <div className="fixed top-4 right-4 bg-green-900/20 border border-green-500 text-green-500 px-4 py-2 rounded-lg shadow-lg z-[9999] flex items-center space-x-2">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Booking deleted successfully!</span>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && bookingToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
+          <div className="bg-[#1A1A1A] rounded-lg p-6 max-w-md w-full border border-red-500/20">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-serif text-red-500">Confirm Delete</h3>
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setBookingToDelete(null);
+                }}
+                className="text-gray-400 hover:text-white"
+                disabled={isDeletingBooking}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <p className="text-gray-300">
+                Are you sure you want to delete this booking?
+              </p>
+              <div className="bg-[#2A2A2A] p-4 rounded-lg">
+                <p className="text-white font-medium">
+                  {typeof bookingToDelete.user === 'object' ? bookingToDelete.user.name : 'Loading...'}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  Check-in: {new Date(bookingToDelete.checkinDate).toLocaleDateString()}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  Check-out: {new Date(bookingToDelete.checkoutDate).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setBookingToDelete(null);
+                }}
+                className="px-4 py-2 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded 
+                  hover:bg-[#C9A55C] hover:text-white transition-colors disabled:opacity-50"
+                disabled={isDeletingBooking}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteBooking}
+                className="px-4 py-2 bg-red-900/20 text-red-500 border border-red-500 rounded 
+                  hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 flex items-center space-x-2"
+                disabled={isDeletingBooking}
+              >
+                {isDeletingBooking ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-red-500"></div>
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  'Delete Booking'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <h2 className="text-2xl font-serif text-[#C9A55C] mb-6">Hotel Management</h2>
+
+      {/* Hotel Search */}
+      <div className="mb-6">
+        <SearchBar
+          onSearch={setHotelSearchTerm}
+          placeholder="Search hotels by name, address, district, or province..."
+          value={hotelSearchTerm}
+        />
+      </div>
 
       {/* Add Hotel Button */}
       <button
@@ -415,185 +670,237 @@ export default function HotelManagement() {
 
       {/* Hotel List */}
       <div className="grid gap-4 mb-8">
-        {hotels.map((hotel) => (
-          <div
-            key={hotel._id}
-            className="border border-[#333333] rounded-lg p-4 flex justify-between items-center 
-              bg-[#1A1A1A] hover:bg-[#2A2A2A] transition-colors"
-          >
-            <div>
-              <h3 className="font-semibold text-white">{hotel.name}</h3>
-              <p className="text-sm text-gray-400">{hotel.address}</p>
-              <p className="text-sm text-gray-400">{hotel.district}, {hotel.province}</p>
-              <p className="text-sm text-gray-400">Tel: {hotel.tel}</p>
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handleViewBookings(hotel._id)}
-                className="px-3 py-1 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded 
-                  hover:bg-[#C9A55C] hover:text-white transition-colors"
-              >
-                View Bookings
-              </button>
-              <button
-                onClick={() => handleEdit(hotel)}
-                className="px-3 py-1 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded 
-                  hover:bg-[#C9A55C] hover:text-white transition-colors"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(hotel._id)}
-                className="px-3 py-1 bg-red-900/20 text-red-500 border border-red-500 rounded 
-                  hover:bg-red-500 hover:text-white transition-colors"
-              >
-                Delete
-              </button>
-            </div>
+        {filteredHotels.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-300">
+              {hotelSearchTerm ? 'No hotels found matching your search.' : 'No hotels found.'}
+            </p>
           </div>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      <Pagination 
-        totalItems={totalItems}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-      />
-
-      {/* Bookings Modal */}
-      {isViewingBookings && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-[#2A2A2A] p-6 rounded-lg w-full max-w-4xl border border-[#333333] max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-serif text-[#C9A55C]">
-                {selectedHotel?.name} - Bookings
-              </h3>
-              <button
-                onClick={handleCloseModal}
-                className="text-gray-400 hover:text-white"
-              >
-                Close
-              </button>
-            </div>
-            
-            <div className="mb-4 space-y-4">
-              {/* Search Controls */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Search by guest name..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full p-2 bg-[#1A1A1A] border border-[#333333] rounded text-white"
-                />
-                <input
-                  type="text"
-                  placeholder="Search by booking ID..."
-                  value={searchBookingId}
-                  onChange={(e) => setSearchBookingId(e.target.value)}
-                  className="w-full p-2 bg-[#1A1A1A] border border-[#333333] rounded text-white"
-                />
+        ) : (
+          filteredHotels.map((hotel) => (
+            <div
+              key={hotel._id}
+              className="border border-[#333333] rounded-lg p-4 flex justify-between items-center 
+                bg-[#1A1A1A] hover:bg-[#2A2A2A] transition-colors"
+            >
+              <div>
+                <h3 className="font-semibold text-white">{hotel.name}</h3>
+                <p className="text-sm text-gray-400">{hotel.address}</p>
+                <p className="text-sm text-gray-400">{hotel.district}, {hotel.province}</p>
+                <p className="text-sm text-gray-400">Tel: {hotel.tel}</p>
               </div>
-
-              {/* Date Range Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-400 mb-1">From Date</label>
-                  <input
-                    type="date"
-                    value={searchDateRange.start || ''}
-                    onChange={(e) => setSearchDateRange(prev => ({
-                      ...prev,
-                      start: e.target.value
-                    }))}
-                    className="w-full p-2 bg-[#1A1A1A] border border-[#333333] rounded text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-400 mb-1">To Date</label>
-                  <input
-                    type="date"
-                    value={searchDateRange.end || ''}
-                    onChange={(e) => setSearchDateRange(prev => ({
-                      ...prev,
-                      end: e.target.value
-                    }))}
-                    className="w-full p-2 bg-[#1A1A1A] border border-[#333333] rounded text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Sort Controls */}
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-4">
-                  <select
-                    value={sortField}
-                    onChange={(e) => setSortField(e.target.value as 'checkinDate' | 'checkoutDate' | 'createdAt')}
-                    className="p-2 bg-[#1A1A1A] border border-[#333333] rounded text-white"
-                  >
-                    <option value="checkinDate">Sort by Check-in Date</option>
-                    <option value="checkoutDate">Sort by Check-out Date</option>
-                    <option value="createdAt">Sort by Creation Date</option>
-                  </select>
-                  <button
-                    onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
-                    className="p-2 bg-[#1A1A1A] border border-[#333333] rounded text-white hover:bg-[#2A2A2A]"
-                  >
-                    {sortDirection === 'asc' ? '↑' : '↓'}
-                  </button>
-                </div>
+              <div className="flex space-x-2">
                 <button
-                  onClick={clearSearchFields}
-                  className="px-4 py-2 bg-[#1A1A1A] text-gray-400 border border-[#333333] rounded hover:bg-[#2A2A2A] transition-colors"
+                  onClick={() => handleViewBookings(hotel._id)}
+                  className="px-3 py-1 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded 
+                    hover:bg-[#C9A55C] hover:text-white transition-colors"
                 >
-                  Clear Filters
+                  View Bookings
+                </button>
+                <button
+                  onClick={() => handleEdit(hotel)}
+                  className="px-3 py-1 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded 
+                    hover:bg-[#C9A55C] hover:text-white transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(hotel._id)}
+                  className="px-3 py-1 bg-red-900/20 text-red-500 border border-red-500 rounded 
+                    hover:bg-red-500 hover:text-white transition-colors"
+                >
+                  Delete
                 </button>
               </div>
             </div>
+          ))
+        )}
+      </div>
 
-            {bookingsLoading ? (
-              <div className="flex justify-center items-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#C9A55C]"></div>
+      {/* Only show pagination if there are hotels and we're not searching */}
+      {filteredHotels.length > 0 && !hotelSearchTerm && (
+        <Pagination 
+          totalItems={totalItems}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
+      )}
+
+      {/* Bookings Modal */}
+      {isViewingBookings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-[#1A1A1A] rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-serif text-[#C9A55C]">
+                Bookings for {selectedHotel?.name}
+              </h3>
+              <button
+                onClick={() => setIsViewingBookings(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Booking Search Controls */}
+            <div className="mb-6 space-y-4">
+              <SearchBar
+                onSearch={setSearchTerm}
+                placeholder="Search bookings by guest name or email..."
+              />
+              <div className="flex gap-4">
+                <input
+                  type="date"
+                  value={searchDateRange.start || ''}
+                  onChange={(e) => setSearchDateRange(prev => ({ ...prev, start: e.target.value }))}
+                  className="flex-1 p-2 bg-[#2A2A2A] border border-[#333333] rounded text-white"
+                />
+                <input
+                  type="date"
+                  value={searchDateRange.end || ''}
+                  onChange={(e) => setSearchDateRange(prev => ({ ...prev, end: e.target.value }))}
+                  className="flex-1 p-2 bg-[#2A2A2A] border border-[#333333] rounded text-white"
+                />
+                <input
+                  type="text"
+                  value={searchBookingId}
+                  onChange={(e) => setSearchBookingId(e.target.value)}
+                  placeholder="Search by Booking ID"
+                  className="flex-1 p-2 bg-[#2A2A2A] border border-[#333333] rounded text-white"
+                />
               </div>
-            ) : filteredBookings.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">No bookings found for this hotel.</p>
-            ) : (
-              <>
-                <div className="grid gap-4">
-                  {filteredBookings.map((booking) => (
-                    <div key={booking._id} className="border border-[#333333] rounded-lg p-4 bg-[#1A1A1A] hover:bg-[#2A2A2A] transition-colors">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-white font-medium">
-                            {typeof booking.user === 'object' ? booking.user.name : 'Loading...'}
-                          </p>
-                          <p className="text-gray-400">
-                            Check-in: {new Date(booking.checkinDate).toLocaleDateString()}
-                          </p>
-                          <p className="text-gray-400">
-                            Check-out: {new Date(booking.checkoutDate).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-[#C9A55C]">Booking ID: {booking._id}</p>
-                          <p className="text-xs text-gray-500">
-                            Created: {new Date(booking.createdAt).toLocaleString()}
-                          </p>
+            </div>
+
+            {/* Bookings List */}
+            <div className="space-y-4">
+              {filteredBookings.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-300">
+                    {searchTerm || searchDateRange.start || searchDateRange.end || searchBookingId
+                      ? 'No bookings found matching your search.'
+                      : 'No bookings found.'}
+                  </p>
+                </div>
+              ) : (
+                filteredBookings.map((booking) => (
+                  <div key={booking._id} className="border border-[#333333] rounded-lg p-4 bg-[#1A1A1A] hover:bg-[#2A2A2A] transition-colors">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-white font-medium">
+                          {typeof booking.user === 'object' ? booking.user.name : 'Loading...'}
+                        </p>
+                        <p className="text-gray-400">
+                          Check-in: {new Date(booking.checkinDate).toLocaleDateString()}
+                        </p>
+                        <p className="text-gray-400">
+                          Check-out: {new Date(booking.checkoutDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-[#C9A55C]">Booking ID: {booking._id}</p>
+                        <p className="text-xs text-gray-500">
+                          Created: {new Date(booking.createdAt).toLocaleString()}
+                        </p>
+                        <div className="mt-2 space-x-2">
+                          <button
+                            onClick={() => handleEditBooking(booking)}
+                            className="px-3 py-1 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded 
+                              hover:bg-[#C9A55C] hover:text-white transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBooking(booking._id)}
+                            disabled={isDeletingBooking}
+                            className="px-3 py-1 bg-red-900/20 text-red-500 border border-red-500 rounded 
+                              hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
+                          >
+                            {isDeletingBooking ? 'Deleting...' : 'Delete'}
+                          </button>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))
+              )}
+            </div>
 
-                {/* Bookings Pagination */}
-                <Pagination 
-                  totalItems={totalBookings}
-                  currentPage={bookingPage}
-                  onPageChange={handleBookingPageChange}
-                />
-              </>
+            {/* Only show pagination if there are bookings and we're not searching */}
+            {filteredBookings.length > 0 && !searchTerm && !searchDateRange.start && !searchDateRange.end && !searchBookingId && (
+              <Pagination 
+                totalItems={totalBookings}
+                currentPage={bookingPage}
+                onPageChange={handleBookingPageChange}
+              />
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Booking Modal */}
+      {isEditingBooking && editingBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-[#1A1A1A] rounded-lg p-6 max-w-md w-full">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-serif text-[#C9A55C]">Edit Booking</h3>
+              <button
+                onClick={handleCancelEditBooking}
+                className="text-gray-400 hover:text-white"
+                disabled={isUpdatingBooking}
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleUpdateBooking} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Check-in Date</label>
+                <input
+                  type="date"
+                  value={bookingFormData.checkinDate}
+                  onChange={(e) => setBookingFormData(prev => ({ ...prev, checkinDate: e.target.value }))}
+                  className="w-full p-2 bg-[#2A2A2A] border border-[#333333] rounded text-white"
+                  required
+                  disabled={isUpdatingBooking}
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Check-out Date</label>
+                <input
+                  type="date"
+                  value={bookingFormData.checkoutDate}
+                  onChange={(e) => setBookingFormData(prev => ({ ...prev, checkoutDate: e.target.value }))}
+                  className="w-full p-2 bg-[#2A2A2A] border border-[#333333] rounded text-white"
+                  required
+                  disabled={isUpdatingBooking}
+                />
+              </div>
+              <div className="flex justify-end space-x-4 mt-6">
+                <button
+                  type="button"
+                  onClick={handleCancelEditBooking}
+                  className="px-4 py-2 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded 
+                    hover:bg-[#C9A55C] hover:text-white transition-colors disabled:opacity-50"
+                  disabled={isUpdatingBooking}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#C9A55C] text-white rounded hover:bg-[#B38B4A] transition-colors 
+                    disabled:opacity-50 flex items-center space-x-2"
+                  disabled={isUpdatingBooking}
+                >
+                  {isUpdatingBooking ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                      <span>Updating...</span>
+                    </>
+                  ) : (
+                    'Update Booking'
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

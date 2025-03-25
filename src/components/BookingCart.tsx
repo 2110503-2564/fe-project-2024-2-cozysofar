@@ -6,6 +6,7 @@ import editBooking from "@/libs/booking/updateBooking";
 import deleteBooking from "@/libs/booking/deleteBooking";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import SearchBar from './SearchBar';
 
 interface Booking {
   _id: string;
@@ -34,6 +35,7 @@ export default function ReservationCart() {
   const [successMessage, setSuccessMessage] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Calculate duration of stay in days
   const calculateDuration = (checkinDate: string, checkoutDate: string) => {
@@ -134,6 +136,12 @@ export default function ReservationCart() {
     }
   };
 
+  const filteredBookings = bookings.filter(booking => 
+    booking.hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (booking.user.name && booking.user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    booking.user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -184,113 +192,130 @@ export default function ReservationCart() {
           Your Bookings
         </h1>
 
+        {/* Search Bar */}
+        <div className="mb-8">
+          <SearchBar
+            onSearch={setSearchTerm}
+            placeholder="Search bookings by hotel name, user name, or email..."
+            className="max-w-2xl mx-auto"
+          />
+        </div>
+
         <div className="space-y-6">
-          {bookings.map((booking) => (
-            <div key={booking._id} className="luxury-card p-6">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-                <div>
-                  <h2 className="text-2xl font-serif text-[#C9A55C] mb-2">
-                    {booking.hotel.name}
-                  </h2>
-                  <div className="text-gray-300 space-y-1">
-                    {session.user.role === "admin" ? (
-                      <p className=" text-gray-400">
-                        Booking id: {booking._id}
-                      </p>
-                    ) : null}
-                    {session.user.role === "admin" ? (
+          {filteredBookings.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-300">
+                {searchTerm ? 'No bookings found matching your search.' : 'No bookings yet.'}
+              </p>
+            </div>
+          ) : (
+            filteredBookings.map((booking) => (
+              <div key={booking._id} className="luxury-card p-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+                  <div>
+                    <h2 className="text-2xl font-serif text-[#C9A55C] mb-2">
+                      {booking.hotel.name}
+                    </h2>
+                    <div className="text-gray-300 space-y-1">
+                      {session.user.role === "admin" ? (
+                        <p className=" text-gray-400">
+                          Booking id: {booking._id}
+                        </p>
+                      ) : null}
+                      {session.user.role === "admin" ? (
+                        <p>
+                          Booking owner: {booking.user.name || booking.user.email}{" "}
+                          ({booking.user.email})
+                        </p>
+                      ) : null}
                       <p>
-                        Booking owner: {booking.user.name || booking.user.email}{" "}
-                        ({booking.user.email})
+                        Check-in:{" "}
+                        {new Date(booking.checkinDate).toLocaleDateString()}
                       </p>
-                    ) : null}
-                    <p>
-                      Check-in:{" "}
-                      {new Date(booking.checkinDate).toLocaleDateString()}
-                    </p>
-                    <p>
-                      Check-out:{" "}
-                      {new Date(booking.checkoutDate).toLocaleDateString()}
-                    </p>
-                    <p>
-                      Duration:{" "}
-                      {calculateDuration(
-                        booking.checkinDate,
-                        booking.checkoutDate
-                      )}{" "}
-                      days
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex space-x-4">
-                  <button
-                    onClick={() => handleEdit(booking)}
-                    className="luxury-button"
-                  >
-                    Edit Dates
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(booking)}
-                    className="px-4 py-2 text-red-400 border border-red-400 rounded-full
-                             hover:bg-red-400/10 transition-all duration-300"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-
-              {editingBooking === booking._id && (
-                <div className="mt-6 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-gray-300 mb-2">
-                        Check-in Date
-                      </label>
-                      <DatePicker
-                        selected={newCheckinDate}
-                        onChange={(date) => setNewCheckinDate(date)}
-                        className="luxury-input w-full"
-                        dateFormat="d MMMM yyyy"
-                        minDate={new Date()}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-300 mb-2">
-                        Check-out Date
-                      </label>
-                      <DatePicker
-                        selected={newCheckoutDate}
-                        onChange={(date) => setNewCheckoutDate(date)}
-                        className="luxury-input w-full"
-                        dateFormat="d MMMM yyyy"
-                        minDate={newCheckinDate || new Date()}
-                      />
+                      <p>
+                        Check-out:{" "}
+                        {new Date(booking.checkoutDate).toLocaleDateString()}
+                      </p>
+                      <p>
+                        Duration:{" "}
+                        {calculateDuration(
+                          booking.checkinDate,
+                          booking.checkoutDate
+                        )}{" "}
+                        days
+                      </p>
                     </div>
                   </div>
-                  <div className="flex justify-end space-x-4">
+
+                  <div className="flex space-x-4">
                     <button
-                      onClick={() => {
-                        setIsEditing(false);
-                        setEditingBooking(null);
-                      }}
-                      className="px-4 py-2 text-gray-300 border border-gray-600 rounded-full
-                               hover:bg-gray-800 transition-all duration-300"
+                      onClick={() => handleEdit(booking)}
+                      className="luxury-button"
+                    >
+                      Edit Dates
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(booking)}
+                      className="px-4 py-2 text-red-400 border border-red-400 rounded-full
+                               hover:bg-red-400/10 transition-all duration-300"
                     >
                       Cancel
                     </button>
-                    <button
-                      onClick={handleSave}
-                      className="luxury-button"
-                      disabled={editLoading}
-                    >
-                      {editLoading ? "Saving..." : "Save Changes"}
-                    </button>
                   </div>
                 </div>
-              )}
-            </div>
-          ))}
+
+                {editingBooking === booking._id && (
+                  <div className="mt-6 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-gray-300 mb-2">
+                          Check-in Date
+                        </label>
+                        <DatePicker
+                          selected={newCheckinDate}
+                          onChange={(date) => setNewCheckinDate(date)}
+                          className="luxury-input w-full"
+                          dateFormat="d MMMM yyyy"
+                          minDate={new Date()}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 mb-2">
+                          Check-out Date
+                        </label>
+                        <DatePicker
+                          selected={newCheckoutDate}
+                          onChange={(date) => setNewCheckoutDate(date)}
+                          className="luxury-input w-full"
+                          dateFormat="d MMMM yyyy"
+                          minDate={newCheckinDate || new Date()}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end space-x-4">
+                      <button
+                        onClick={() => {
+                          setIsEditing(false);
+                          setEditingBooking(null);
+                        }}
+                        className="px-4 py-2 text-gray-300 border border-gray-600 rounded-full
+                                 hover:bg-gray-800 transition-all duration-300"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSave}
+                        className="luxury-button"
+                        disabled={editLoading}
+                      >
+                        {editLoading ? "Saving..." : "Save Changes"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
 

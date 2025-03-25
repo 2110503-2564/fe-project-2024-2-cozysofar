@@ -7,22 +7,48 @@ import updateUser from "@/libs/account/updateUser";
 import getUserProfile from "@/libs/account/getUserProfile";
 import { User } from "@/types";
 import LoadingSpinner from './LoadingSpinner';
+import SearchBar from '../SearchBar';
 
 export default function AccountManagement() {
   const { data: session } = useSession();
   const [users, setUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     if (session?.user?.token) {
+      fetchAllUsers();
+    } else {
+      setLoading(false);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (session?.user?.token && !searchTerm) {
       fetchUsers();
     } else {
       setLoading(false);
     }
-  }, [session, currentPage]);
+  }, [session, currentPage, searchTerm]);
+
+  const fetchAllUsers = async () => {
+    if (!session?.user?.token) return;
+    try {
+      setLoading(true);
+      const response = await getUsers(session.user.token, 1, 1000);
+      setAllUsers(response.data);
+      setTotalItems(response.count);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching all users:", error);
+      setLoading(false);
+    }
+  };
 
   const fetchUsers = async () => {
     if (!session?.user?.token) return;
@@ -38,13 +64,28 @@ export default function AccountManagement() {
     }
   };
 
-  const handleUpdateRole = async (userId: string, newRole: string) => {
+  const handleRoleChange = async (userId: string, newRole: string) => {
     if (!session?.user?.token) return;
     try {
-      await updateUser(userId, { role: newRole }, session.user.token);
-      fetchUsers();
+      await fetch(`https://cozyhotel-be.vercel.app/api/v1/accounts/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${session.user.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
+
+      // Refresh both filtered and all users
+      await fetchUsers();
+      await fetchAllUsers();
+      
+      // Show success message
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
     } catch (error) {
-      console.error("Error updating user role:", error);
+      console.error('Error updating user role:', error);
+      alert('Failed to update user role');
     }
   };
 
@@ -53,7 +94,9 @@ export default function AccountManagement() {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
         await deleteUser(userId, session.user.token);
-        fetchUsers();
+        // Refresh both filtered and all users
+        await fetchUsers();
+        await fetchAllUsers();
       } catch (error) {
         console.error("Error deleting user:", error);
       }
@@ -141,6 +184,15 @@ export default function AccountManagement() {
     );
   };
 
+  const filteredUsers = searchTerm
+    ? allUsers.filter(user => 
+        (user.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (user.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (user.tel?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (user.role?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+      )
+    : users;
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -151,54 +203,84 @@ export default function AccountManagement() {
 
   return (
     <div>
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 right-4 bg-green-900/20 border border-green-500 text-green-500 px-4 py-2 rounded-lg shadow-lg z-[9999] flex items-center space-x-2">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span>User role updated successfully!</span>
+        </div>
+      )}
+
       <h2 className="text-2xl font-serif text-[#C9A55C] mb-6">User Accounts</h2>
 
-      <div className="grid gap-4 mb-8">
-        {users.map((user: any) => (
-          <div
-            key={user._id}
-            className="border border-[#333333] rounded-lg p-4 flex justify-between items-center bg-[#1A1A1A] hover:bg-[#2A2A2A] transition-colors"
-          >
-            <div>
-              <h3 className="font-semibold text-white">{user.name}</h3>
-              <p className="text-sm text-gray-400">{user.email}</p>
-              <p className="text-sm text-gray-400">Tel: {user.tel}</p>
-              <p className="text-xs text-[#C9A55C]">Role: {user.role}</p>
-              <p className="text-xs text-gray-500">
-                Created: {new Date(user.createAt).toLocaleDateString()}
-              </p>
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handleUpdateRole(user._id, "admin")}
-                className="px-3 py-1 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded hover:bg-[#C9A55C] hover:text-white transition-colors"
-                disabled={user.role === "admin"}
-              >
-                Make Admin
-              </button>
-              <button
-                onClick={() => handleUpdateRole(user._id, "user")}
-                className="px-3 py-1 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded hover:bg-[#C9A55C] hover:text-white transition-colors"
-                disabled={user.role === "user"}
-              >
-                Make User
-              </button>
-              <button
-                onClick={() => handleDeleteUser(user._id)}
-                className="px-3 py-1 bg-red-900/20 text-red-500 border border-red-500 rounded hover:bg-red-500 hover:text-white transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+      {/* Search Bar */}
+      <div className="mb-6">
+        <SearchBar
+          onSearch={setSearchTerm}
+          placeholder="Search users by name, email, phone, or role..."
+          value={searchTerm}
+        />
       </div>
 
-      <Pagination 
-        totalItems={totalItems}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-      />
+      <div className="grid gap-4 mb-8">
+        {filteredUsers.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-300">
+              {searchTerm ? 'No users found matching your search.' : 'No users found.'}
+            </p>
+          </div>
+        ) : (
+          filteredUsers.map((user: any) => (
+            <div
+              key={user._id}
+              className="border border-[#333333] rounded-lg p-4 flex justify-between items-center bg-[#1A1A1A] hover:bg-[#2A2A2A] transition-colors"
+            >
+              <div>
+                <h3 className="font-semibold text-white">{user.name}</h3>
+                <p className="text-sm text-gray-400">{user.email}</p>
+                <p className="text-sm text-gray-400">Tel: {user.tel}</p>
+                <p className="text-xs text-[#C9A55C]">Role: {user.role}</p>
+                <p className="text-xs text-gray-500">
+                  Created: {new Date(user.createAt).toLocaleDateString()}
+                </p>
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleRoleChange(user._id, "admin")}
+                  className="px-3 py-1 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded hover:bg-[#C9A55C] hover:text-white transition-colors"
+                  disabled={user.role === "admin"}
+                >
+                  Make Admin
+                </button>
+                <button
+                  onClick={() => handleRoleChange(user._id, "user")}
+                  className="px-3 py-1 bg-[#2A2A2A] text-[#C9A55C] border border-[#C9A55C] rounded hover:bg-[#C9A55C] hover:text-white transition-colors"
+                  disabled={user.role === "user"}
+                >
+                  Make User
+                </button>
+                <button
+                  onClick={() => handleDeleteUser(user._id)}
+                  className="px-3 py-1 bg-red-900/20 text-red-500 border border-red-500 rounded hover:bg-red-500 hover:text-white transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Only show pagination if there are users and we're not searching */}
+      {filteredUsers.length > 0 && !searchTerm && (
+        <Pagination 
+          totalItems={totalItems}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   );
 }
