@@ -59,7 +59,8 @@ export default function RegisterPage(){
                             name='password' 
                             placeholder='Enter your password' 
                             onChange={(event)=>{setPassword(event.target.value)}} 
-                            className="luxury-input w-full" 
+                            className="luxury-input w-full"
+                            minLength={6}
                         />
                     </div>
 
