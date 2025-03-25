@@ -25,13 +25,26 @@ export default async function userRegister(
       }
     );
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      throw new Error("Failed to register");
+      
+      return {
+        success: false,
+        message: data.message || "Registration Failed beacuse of duplicate email or wrong input",
+        data
+      };
     }
 
-    return await response.json();
+    return {
+      success: true,
+      data
+    };
   } catch (error) {
     console.error("Registration error:", error);
-    throw error;
+    return {
+      success: false,
+      message: "Registration failed. Please try again.",
+    };
   }
 }
