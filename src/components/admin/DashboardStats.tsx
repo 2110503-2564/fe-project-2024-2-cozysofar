@@ -4,9 +4,11 @@ import { useSession } from "next-auth/react";
 import getUsers from "@/libs/account/getUsers";
 import getHotels from "@/libs/hotel/getHotels";
 import getBookings from "@/libs/booking/getBookings";
+import LoadingSpinner from './LoadingSpinner';
 
 export default function DashboardStats() {
   const { data: session } = useSession();
+  const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalHotels: 0,
@@ -34,8 +36,14 @@ export default function DashboardStats() {
       });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   if (!session) {
     return <div>Please sign in to view stats</div>;

@@ -8,6 +8,7 @@ import editHotel from '@/libs/hotel/updateHotel';
 import deleteHotel from '@/libs/hotel/deleteHotel';
 import getBookingsByHotel from '@/libs/booking/getBookingsByHotel';
 import { Hotel, HotelUpdate, Booking } from '@/types';
+import LoadingSpinner from './LoadingSpinner';
 
 export default function HotelManagement() {
   const { data: session } = useSession();
@@ -35,6 +36,18 @@ export default function HotelManagement() {
     isEditing: false,
     editingId: null,
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchDateRange, setSearchDateRange] = useState<{
+    start: string | null;
+    end: string | null;
+  }>({
+    start: null,
+    end: null
+  });
+  const [sortField, setSortField] = useState<'checkinDate' | 'checkoutDate' | 'createdAt'>('checkinDate');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [searchBookingId, setSearchBookingId] = useState('');
 
   const validateForm = (data: typeof formData) => {
     if (data.name.length > 50) {
@@ -88,8 +101,10 @@ export default function HotelManagement() {
     try {
       const response = await getHotels();
       setHotels(response.data);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error fetching hotels:', error);
+      setIsLoading(false);
     }
   };
 
@@ -204,8 +219,62 @@ export default function HotelManagement() {
     });
   };
 
+  const clearSearchFields = () => {
+    setSearchTerm('');
+    setSearchBookingId('');
+    setSearchDateRange({
+      start: null,
+      end: null
+    });
+    setSortField('checkinDate');
+    setSortDirection('asc');
+  };
+
+  const filteredBookings = selectedHotelBookings
+    .filter(booking => {
+      const guestName = typeof booking.user === 'object' && booking.user.name 
+        ? booking.user.name.toLowerCase() 
+        : '';
+      
+      const matchesGuestName = searchTerm 
+        ? guestName.includes(searchTerm.toLowerCase())
+        : true;
+      
+      const matchesBookingId = searchBookingId 
+        ? booking._id.toLowerCase().includes(searchBookingId.toLowerCase())
+        : true;
+
+      let matchesDateRange = true;
+      if (searchDateRange.start && searchDateRange.end) {
+        const bookingStart = new Date(booking.checkinDate);
+        const bookingEnd = new Date(booking.checkoutDate);
+        const searchStart = new Date(searchDateRange.start);
+        const searchEnd = new Date(searchDateRange.end);
+        
+        matchesDateRange = bookingStart >= searchStart && bookingEnd <= searchEnd;
+      }
+
+      return matchesGuestName && matchesBookingId && matchesDateRange;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a[sortField]);
+      const dateB = new Date(b[sortField]);
+      return sortDirection === 'asc' 
+        ? dateA.getTime() - dateB.getTime()
+        : dateB.getTime() - dateA.getTime();
+    });
+
+  const handleCloseModal = () => {
+    setIsViewingBookings(false);
+    clearSearchFields();
+  };
+
   if (!session) {
     return <div>Please sign in to manage hotels</div>;
+  }
+
+  if (isLoading) {
+    return <LoadingSpinner />;
   }
 
   return (
@@ -273,23 +342,82 @@ export default function HotelManagement() {
       {/* Bookings Modal */}
       {isViewingBookings && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-[#2A2A2A] p-6 rounded-lg w/full max-w-4xl border border-[#333333] max-h-[80vh] overflow-y-auto">
+          <div className="bg-[#2A2A2A] p-6 rounded-lg w-full max-w-4xl border border-[#333333] max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-serif text-[#C9A55C]">Hotel Bookings</h3>
               <button
-                onClick={() => setIsViewingBookings(false)}
+                onClick={handleCloseModal}
                 className="text-gray-400 hover:text-white"
               >
                 Close
               </button>
             </div>
+            
+            <div className="mb-4 space-y-4">
+              {/* Search Controls */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Search by guest name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full p-2 bg-[#1A1A1A] border border-[#333333] rounded text-white"
+                />
+                <input
+                  type="text"
+                  placeholder="Search by booking ID..."
+                  value={searchBookingId}
+                  onChange={(e) => setSearchBookingId(e.target.value)}
+                  className="w-full p-2 bg-[#1A1A1A] border border-[#333333] rounded text-white"
+                />
+              </div>
+
+              {/* Date Range Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-400 mb-1">From Date</label>
+                  <input
+                    type="date"
+                    value={searchDateRange.start || ''}
+                    onChange={(e) => setSearchDateRange(prev => ({
+                      ...prev,
+                      start: e.target.value
+                    }))}
+                    className="w-full p-2 bg-[#1A1A1A] border border-[#333333] rounded text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-400 mb-1">To Date</label>
+                  <input
+                    type="date"
+                    value={searchDateRange.end || ''}
+                    onChange={(e) => setSearchDateRange(prev => ({
+                      ...prev,
+                      end: e.target.value
+                    }))}
+                    className="w-full p-2 bg-[#1A1A1A] border border-[#333333] rounded text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Add Clear Filters button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={clearSearchFields}
+                  className="px-4 py-2 bg-[#1A1A1A] text-gray-400 border border-[#333333] rounded hover:bg-[#2A2A2A] transition-colors"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+
             {bookingsLoading ? (
               <p className="text-gray-400">Loading bookings...</p>
-            ) : selectedHotelBookings.length === 0 ? (
+            ) : filteredBookings.length === 0 ? (
               <p className="text-gray-400">No bookings found for this hotel.</p>
             ) : (
               <div className="grid gap-4">
-                {selectedHotelBookings.map((booking) => (
+                {filteredBookings.map((booking) => (
                   <div key={booking._id} className="border border-[#333333] rounded-lg p-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -324,6 +452,8 @@ export default function HotelManagement() {
                     <label className="text-sm font-medium text-gray-400">Hotel Name</label>
                     <input
                       type="text"
+                      placeholder="Hotel Name"
+                      className="w-full p-2 bg-[#1A1A1A] border border-[#333333] rounded text-white placeholder:text-gray-500 focus:border-[#C9A55C] focus:outline-none"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       maxLength={50}

@@ -6,7 +6,7 @@ import AccountManagement from "@/components/admin/AccountManagement";
 import DashboardStats from "@/components/admin/DashboardStats";
 
 export default function AdminDashboard() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState('overview');
   
   const tabs = [
@@ -14,6 +14,17 @@ export default function AdminDashboard() {
     { id: 'hotels', label: 'Hotels Management' },
     { id: 'accounts', label: 'User Accounts' },
   ];
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C9A55C] mx-auto mb-4"></div>
+          <p className="text-[#C9A55C]">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!session?.user?.token) {
     return (
@@ -61,9 +72,21 @@ export default function AdminDashboard() {
 
         {/* Dashboard Content */}
         <div className="bg-[#2A2A2A] rounded-lg shadow-xl p-6 border border-[#333333]">
-          {activeTab === 'overview' && <DashboardStats />}
-          {activeTab === 'hotels' && <HotelManagement />}
-          {activeTab === 'accounts' && <AccountManagement />}
+          {activeTab === 'overview' && (
+            <div className="relative">
+              <DashboardStats />
+            </div>
+          )}
+          {activeTab === 'hotels' && (
+            <div className="relative">
+              <HotelManagement />
+            </div>
+          )}
+          {activeTab === 'accounts' && (
+            <div className="relative">
+              <AccountManagement />
+            </div>
+          )}
         </div>
       </div>
     </div>
