@@ -18,7 +18,7 @@ export default function Reservations() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 6; // Match backend pagination
@@ -74,12 +74,21 @@ export default function Reservations() {
   }, [hotelName]);
 
   useEffect(() => {
-    if (!session?.user?.token) return;
-    fetchBookings();
+    const initializePage = async () => {
+      if (!session?.user?.token) {
+        setLoading(false);
+        return;
+      }
+      await fetchBookings();
+    };
+    initializePage();
   }, [session, currentPage]);
 
   const fetchBookings = async () => {
-    if (!session?.user?.token) return;
+    if (!session?.user?.token) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const response = await getBookings(session.user.token, currentPage, itemsPerPage);
@@ -276,11 +285,30 @@ export default function Reservations() {
   }
 
   if (!session?.user?.token) {
-    return <p>Please sign in to view bookings</p>;
+    return (
+      <main className="w-full min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
+        <div className="luxury-card p-8 text-center max-w-md">
+          <h1 className="text-3xl font-serif text-[#C9A55C] mb-4">Sign In Required</h1>
+          <div className="w-24 h-[2px] bg-[#C9A55C] mx-auto mb-6"></div>
+          <p className="text-gray-300 mb-6">Please sign in to make a reservation</p>
+          <button
+            onClick={() => router.push("/api/auth/signin")}
+            className="luxury-button w-full"
+          >
+            Sign In
+          </button>
+        </div>
+      </main>
+    );
   }
 
   return (
     <main className="w-full min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <LoadingSpinner />
+        </div>
+      )}
       {showSuccess && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="luxury-card p-8 text-center">
