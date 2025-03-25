@@ -1,24 +1,33 @@
-import Email from "next-auth/providers/email";
+import { API_ENDPOINTS } from '@/config/api';
 
 export default async function userLogIn(
   userEmail: string,
   userPassword: string
 ) {
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  try {
+    console.log(`Logging in user: ${userEmail}`);
 
-  const response = await fetch("https://cozyhotel-be.vercel.app/api/v1/auth/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: userEmail,
-      password: userPassword,
-    }),
-  });
-  if (!response.ok) {
-    throw new Error("Failed to log-in");
+    const response = await fetch(
+      API_ENDPOINTS.AUTH.LOGIN,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          password: userPassword,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to login");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
   }
-
-  return await response.json();
 }

@@ -1,14 +1,19 @@
-export default async function deleteHotel(hotelId: string, token: string) {
+import { API_ENDPOINTS } from '@/config/api';
+
+export default async function deleteHotel(id: string, token: string) {
     if (!token) {
         throw new Error("Authentication required");
     }
 
-    const response = await fetch(`https://cozyhotel-be.vercel.app/api/v1/hotels/${hotelId}`, {
-        method: 'DELETE',
-        headers: {
-            'authorization': `Bearer ${token}`,
+    const response = await fetch(
+        API_ENDPOINTS.HOTELS.BY_ID(id),
+        {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
         }
-    });
+    );
 
     if (!response.ok) {
         const errorData = await response.text();

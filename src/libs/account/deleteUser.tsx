@@ -1,6 +1,8 @@
+import { API_ENDPOINTS } from '@/config/api';
+
 export default async function deleteUser(userId: string, token: string) {
   const response = await fetch(
-    `https://cozyhotel-be.vercel.app/api/v1/accounts/${userId}`,
+    API_ENDPOINTS.ACCOUNTS.BY_ID(userId),
     {
       method: "DELETE",
       headers: {
@@ -10,7 +12,7 @@ export default async function deleteUser(userId: string, token: string) {
   );
 
   if (!response.ok) {
-    throw new Error("Cannot delete user");
+    throw new Error("Failed to delete user");
   }
 
   return await response.json();

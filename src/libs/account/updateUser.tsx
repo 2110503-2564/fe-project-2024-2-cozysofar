@@ -1,18 +1,20 @@
-export default async function updateUser(userId: string, userData: any, token: string) {
+import { API_ENDPOINTS } from '@/config/api';
+
+export default async function updateUser(userId: string, data: any, token: string) {
   const response = await fetch(
-    `https://cozyhotel-be.vercel.app/api/v1/accounts/${userId}`,
+    API_ENDPOINTS.ACCOUNTS.BY_ID(userId),
     {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(userData),
+      body: JSON.stringify(data),
     }
   );
 
   if (!response.ok) {
-    throw new Error("Cannot update user");
+    throw new Error("Failed to update user");
   }
 
   return await response.json();

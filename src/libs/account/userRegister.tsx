@@ -1,31 +1,37 @@
+import { API_ENDPOINTS } from '@/config/api';
+
 export default async function userRegister(
   userName: string,
   userEmail: string,
   userPassword: string,
   userTel: string
 ) {
-  const response = await fetch(
-    "https://cozyhotel-be.vercel.app/api/v1/auth/register",
-    {
-      method: "POST",
-      cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: userName,
-        email: userEmail,
-        password: userPassword,
-        role: "user",
-        tel: userTel,
-      }),
+  try {
+    console.log(`Registering user: ${userName}, ${userEmail}`);
+
+    const response = await fetch(
+      API_ENDPOINTS.AUTH.REGISTER,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: userName,
+          email: userEmail,
+          password: userPassword,
+          tel: userTel,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to register");
     }
-  );
-  console.log(response);
 
-  if (!response.ok) {
-    throw new Error("Failed to register");
+    return await response.json();
+  } catch (error) {
+    console.error("Registration error:", error);
+    throw error;
   }
-
-  return await response.json();
 }

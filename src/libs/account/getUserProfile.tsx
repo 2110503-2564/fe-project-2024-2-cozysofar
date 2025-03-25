@@ -1,14 +1,19 @@
+import { API_ENDPOINTS } from '@/config/api';
+
 export default async function getUserProfile(token: string) {
-  const response = await fetch("https://cozyhotel-be.vercel.app/api/v1/auth/me", {
-    method: "GET",
-    headers: {
-      authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await fetch(
+    API_ENDPOINTS.AUTH.ME,
+    {
+      method: "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    }
+  );
 
   if (!response.ok) {
-    throw new Error("Cannot get user profile");
+    throw new Error("Failed to fetch user profile");
   }
- 
+
   return await response.json();
 }

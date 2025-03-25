@@ -1,55 +1,45 @@
-interface UpdateHotelParams {
-    name: string;
-    address: string;
-    district: string;
-    province: string;
-    postalcode: string;
-    tel?: string;
-    picture: string;
-    description: string;
-}
+import { API_ENDPOINTS } from '@/config/api';
 
 export default async function updateHotel(
-    hotelId: string,
-    token: string,
-    hotelData: UpdateHotelParams
+    id: string,
+    hotelData: {
+        name?: string;
+        address?: string;
+        district?: string;
+        province?: string;
+        postalcode?: string;
+        tel?: string;
+        picture?: string;
+        description?: string;
+    },
+    token: string
 ) {
     if (!token) {
         throw new Error("Authentication required");
     }
 
-    const requestBody = {
-        name: hotelData.name,
-        address: hotelData.address,
-        district: hotelData.district,
-        province: hotelData.province,
-        postalcode: hotelData.postalcode,
-        tel: hotelData.tel,
-        picture: hotelData.picture,
-        description: hotelData.description
-    };
-
-    const response = await fetch(`https://cozyhotel-be.vercel.app/api/v1/hotels/${hotelId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(requestBody)
-    });
+    const response = await fetch(
+        API_ENDPOINTS.HOTELS.BY_ID(id),
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(hotelData),
+        }
+    );
 
     if (!response.ok) {
         const errorData = await response.text();
-        console.error('API Error Response:', errorData);
-        console.error('Response Status:', response.status);
+        console.error("API Error Response:", errorData);
+        console.error("Response Status:", response.status);
 
         let errorMessage;
         try {
-            // Try to parse the error as JSON
             const errorJson = JSON.parse(errorData);
             errorMessage = errorJson.message || errorJson.error || errorData;
         } catch {
-            // If not JSON, use the raw error text
             errorMessage = errorData;
         }
 

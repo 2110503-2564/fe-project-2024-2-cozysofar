@@ -1,11 +1,8 @@
 import HotelCatalog from "@/components/HotelCatalog";
-import getHotels from "@/libs/hotel/getHotels";
 import { Suspense } from "react";
 import { LinearProgress } from "@mui/material";
 
-export default function Car() {
-  const hotels = getHotels();
-
+export default function HotelPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
       <div className="luxury-section">
@@ -25,7 +22,7 @@ export default function Car() {
               </div>
             }
           >
-            <HotelCatalog hotelJson={hotels} />
+            <HotelCatalog />
           </Suspense>
         </div>
       </div>

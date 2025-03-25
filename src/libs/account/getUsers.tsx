@@ -1,18 +1,17 @@
-export default async function getUsers(token: string) {
-  // const params = new URLSearchParams();
-  // if (queryParams) {
-  //   Object.entries(queryParams).forEach(([key, value]) => {
-  //     if (value) params.append(key, value.toString());
-  //   });
-  // }
+import { API_ENDPOINTS } from '@/config/api';
+
+export default async function getUsers(token: string, page?: number, limit?: number) {
+  const params = new URLSearchParams();
+  if (page) params.append('page', page.toString());
+  if (limit) params.append('limit', limit.toString());
 
   const response = await fetch(
-    `https://cozyhotel-be.vercel.app/api/v1/accounts?`,
+    `${API_ENDPOINTS.ACCOUNTS.BASE}?${params.toString()}`,
     {
       method: "GET",
       headers: {
         authorization: `Bearer ${token}`,
-    } 
+      }
     }
   );
 
